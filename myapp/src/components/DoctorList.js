@@ -1,13 +1,45 @@
-import { Button, Form, Modal } from 'react-bootstrap'
-import React, { useState } from 'react'
+
+import React, { useEffect, useState } from 'react';
+import { Button, Modal } from 'react-bootstrap';
+import DoctorModal from './DoctorModal';
+import axios from 'axios';
 
 const DoctorList = () => {
+    const token = localStorage.getItem("token");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [doctorsList, setDoctorsList] = useState([]);
     const [doctorName, setDoctorName] = useState('');
     const [specialty, setSpecialty] = useState('');
     const [education, setEducation] = useState('');
+    const [doctor, setDoctor] = useState({
+        DoctorName: "",
+        SpecialityID: null,
+        Education: "",
+    });
+
+    const fetchDoctorList=async()=>{
+        try {
+            const response = await axios.get('https://localhost:7137/api/Doctor/GetList', {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            // Assuming the response contains a list of doctors
+            const doctorList = response.data;
+            setDoctorsList(doctorList)
+            console.log('Doctor list:', doctorList);
+          } catch (error) {
+            console.error('Error fetching doctor list:', error.message);
+          }
+    }
+
+    useEffect(()=>{
+        fetchDoctorList();
+    },[])
 
     const handleAddClick = () => {
+        setSelectedDoctor(null);
         setIsModalOpen(true);
     };
 
@@ -15,20 +47,94 @@ const DoctorList = () => {
         setIsModalOpen(false);
     };
 
-    const handleSaveDoctor = () => {
-        console.log('Doctor Name:', doctorName);
-        console.log('Specialty:', specialty);
-        console.log('Education:', education);
+    const handleSaveDoctor = async() => {
+        debugger
+        if (selectedDoctor) {
+            console.log("Selected Doctor",selectedDoctor)
+            const updatedDoctorData={
+                doctorID:selectedDoctor?.DoctorID,
+                doctorName:selectedDoctor?.DoctorName,
+                specialityID:selectedDoctor?.SpecialityID,
+                education:selectedDoctor?.Education
+            }
+            try {
+                const response = await axios.put(`https://localhost:7137/api/Doctor/Update/`, updatedDoctorData, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                fetchDoctorList();
+                console.log('Doctor updated successfully:');
+              } catch (error) {
+                console.error('Error updating doctor:', error.message);
+              }
+        
+        } else {
+            
+            try {
+                const data={
+                    doctorName: doctor?.DoctorName,
+                    specialityID:doctor?.SpecialityID,
+                    education: doctor?.Education
+                }
+                const response = await axios.post('https://localhost:7137/api/Doctor/Insert', data, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                });
+                fetchDoctorList();
+                console.log('Doctor inserted successfully:');
+              } catch (error) {
+                console.error('Error inserting doctor:', error.message);
+              }
+
+
+        }
         setIsModalOpen(false);
+    };
+
+    const handleEditDoctor = (doctor) => {
+        setSelectedDoctor(doctor);
+        setIsModalOpen(true);
+    };
+
+    const handleDeleteDoctor = async(doctorId) => {
+        console.log("Doctor",doctorId)
+        try {
+            const response = await axios.delete(`https://localhost:7137/api/Doctor/Delete/${doctorId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            fetchDoctorList();
+          } catch (error) {
+            console.error('Error deleting doctor:', error.message);
+          }
+    };
+
+    const handleChange = (e) => {
+        debugger
+        const { name, value } = e.target;
+        if (selectedDoctor) {
+            setSelectedDoctor(prevState => ({
+                ...prevState,
+                [name]: value
+            }));
+        } else {
+            setDoctor(prevState => ({
+                ...prevState,
+                [name]: value
+            }));
+        }
     };
 
     return (
         <div className="container " style={{ height: "100vh" }}>
             <div className="w-100 d-flex justify-content-between">
                 <h3>Doctor List</h3>
-                <Button variant="primary" onClick={handleAddClick}>
-                    Add
-                </Button>
+                <Button variant="primary" onClick={handleAddClick}>Add</Button>
             </div>
 
             <table className="container text-center">
@@ -38,78 +144,36 @@ const DoctorList = () => {
                         <th>Doctor Name</th>
                         <th>Specialty</th>
                         <th>Education</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {/* {bills?.map((bill) => (
-        <tr key={bill?.primaryKeyID}>
-          <td>{bill?.primaryKeyID}</td>
-          <td>{bill?.billNo}</td>
-          <td>{bill?.billDate.substr(0,10)}</td>
-          <td>{bill?.customerName}</td>
-          <td>{bill?.netAmount}</td>
-          <td>{bill?.remarks && bill.remarks.replace(/<[^>]*>/g, '').substring(0, 50)}</td>
-          <td className="d-flex">
-            <Button className="mx-2" variant="info" onClick={() => handleEditClick(bill.billID)}>
-              Edit
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => handleDeleteClick(bill.billID)}
-            >
-              Delete
-            </Button>
-          </td>
-        </tr>
-      ))} */}
+                    {doctorsList.map((doctor, index) => (
+                        <tr key={doctor.id}>
+                            <td>{index + 1}</td>
+                            <td>{doctor.DoctorName}</td>
+                            <td>{doctor.SpecialityName}</td>
+                            <td>{doctor.Education}</td>
+                            <td>
+                                <Button variant="info" onClick={() => handleEditDoctor(doctor)}>Edit</Button>
+                                <Button variant="danger" onClick={() => handleDeleteDoctor(doctor.DoctorID)}>Delete</Button>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
 
-            <Modal show={isModalOpen} onHide={handleCloseModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Add Doctor</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group controlId="doctorName">
-                            <Form.Label>Doctor Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={doctorName}
-                                onChange={(e) => setDoctorName(e.target.value)}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="specialty">
-                            <Form.Label>Specialty</Form.Label>
-                            <Form.Control as="select" value={specialty} onChange={(e) => setSpecialty(e.target.value)}>
-                                <option value="">Select Specialty</option>
-                                <option value="Cardiology">Cardiology</option>
-                                <option value="Dermatology">Dermatology</option>
-                                <option value="Endocrinology">Endocrinology</option>
-                            </Form.Control>
-                        </Form.Group>
-                        <Form.Group controlId="education">
-                            <Form.Label>Education</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={education}
-                                onChange={(e) => setEducation(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={handleSaveDoctor}>
-                        Save Doctor
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <DoctorModal
+                show={isModalOpen}
+                handleClose={handleCloseModal}
+                handleSave={handleSaveDoctor}
+                selectedDoctor={selectedDoctor}
+                doctor={doctor}
+                handleChange={handleChange}
 
+            />
         </div>
-    )
-}
+    );
+};
 
-export default DoctorList
+export default DoctorList;

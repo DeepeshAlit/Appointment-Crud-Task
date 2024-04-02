@@ -4,22 +4,26 @@ import { useNavigate } from 'react-router-dom';
 
 const Navigation = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(null);
-
+  const [isToken, setIsToken] = useState(false);
+  const token = localStorage.getItem("token");
   useEffect(() => {
-    const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-    setIsLoggedIn(storedIsLoggedIn === 'true');
-  }, []);
+    if (token) {
+      setIsToken(true);
+    } else {
+      setIsToken(false);
+    }
+  }, [token]);
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem('isLoggedIn')
-    navigate("/")
+
+  const handleToLogout = () => {
+    localStorage.removeItem("token");
+    setIsToken(false);
+    navigate("/");
   };
   
   return (
     <div>
-      {isLoggedIn && <div className="container-fluid">
+      {isToken && <div className="container-fluid">
       <div className="row">
         <nav className="col-md-2 d-none d-md-block bg-light sidebar">
           <div className="sidebar-sticky">
@@ -55,7 +59,7 @@ const Navigation = () => {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink className="nav-link" activeClassName="active" to="/" onClick={handleLogout}>
+                <NavLink className="nav-link" activeClassName="active" to="/" onClick={handleToLogout}>
                   Logout 
                 </NavLink>
               </li>

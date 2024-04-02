@@ -11,28 +11,29 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); 
-    navigate("/home")
-    localStorage.setItem('isLoggedIn', true);
-    // const data = {
-    //   email: email,
-    //   password: password
-    // };
+    const data = {
+      userName: email,
+      password: password
+    };
 
-    // try {
-    //   const response = await fetch('your_api_endpoint', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(data)
-    //   });
+    try {
+      const response = await fetch('https://localhost:7137/api/Authenticate/Post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
 
-    //   const responseData = await response.json();
-    //   console.log(responseData);
+      const responseData = await response.json();
+      localStorage.setItem('token',responseData.AuthenticateToken);
 
-    // } catch (error) {
-    //   console.error('Error:', error);
-    // }
+      console.log(responseData);
+      navigate("/home")
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   return (
