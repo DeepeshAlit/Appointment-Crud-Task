@@ -1,246 +1,404 @@
-import React, { useState } from 'react'
-import { Modal, Button, Form } from 'react-bootstrap';
 
+import React, { useEffect, useState } from 'react';
+import { Button, Table } from 'react-bootstrap';
+import AppointmentModal from './AppointmentModal';
+import axios from 'axios';
 
 const AppointmentList = () => {
+    const token = localStorage.getItem("token");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [itemName, setItemName] = useState('');
-    const [gender, setGender] = useState('');
-    const [doctorName, setDoctorName] = useState('');
-    const [specialty, setSpecialty] = useState('');
-    const [education, setEducation] = useState('');
+    const [appointments, setAppointments] = useState([]);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [stateList, setStateList] = useState([]);
+    const [filterCity, setFilterCity] = useState([]);
+    const [cityList, setCityList] = useState([]);
+    const [doctorsList, setDoctorsList] = useState([]);
+    const [specialtiesList, setSpecialtiesList] = useState([]);
+    const initialData = {
+
+        appointmentID: 0,
+        appointmentDateTime: "",
+        firstName: "",
+        lastName: "",
+        fullName: "",
+        dob: "",
+        gender: null,
+        mobileNo: "",
+        maritalStatus: null,
+        address: "",
+        stateID: null,
+        cityID: null,
+        reasonForAppointment: "",
+        specialityID: null,
+        doctorID: null
+
+    }
+    const [patientAppointment, setPatientAppointment] = useState(initialData)
+    const initialErrors = {
+        appointmentDateTime: false,
+        firstName: false,
+        lastName: false,
+        fullName: false,
+        dob: false,
+        gender: false,
+        mobileNo: false,
+        maritalStatus: false,
+        address: false,
+        stateID: false,
+        cityID: false,
+        reasonForAppointment: false,
+        specialityID: false,
+        doctorID: false
+    }
+    const [patientAppointmentError, setPatientAppointmentError] = useState(initialErrors)
+
+
+    const fetchDoctorList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/Doctor/GetList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const doctorList = response.data;
+            setDoctorsList(doctorList)
+            console.log('Doctor list:', doctorList);
+        } catch (error) {
+            console.error('Error fetching doctor list:', error.message);
+        }
+    }
+
+    const fetchSpecialtyList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/Speciality/GetList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const specialities = response.data;
+            setSpecialtiesList(specialities)
+            console.log('Speciality list:', specialities);
+        } catch (error) {
+            console.error('Error fetching speciality list:', error.message);
+        }
+    }
+
+    const fetchPatientList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/Patient/GetList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const patientList = response.data;
+            setAppointments(patientList)
+            console.log('Patient list:', patientList);
+        } catch (error) {
+            console.error('Error fetching patient list:', error.message);
+        }
+    }
+
+    const fetchStateList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/State/GetList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const stateList = response.data;
+            setStateList(stateList)
+            console.log('State list:', stateList);
+        } catch (error) {
+            console.error('Error fetching state list:', error.message);
+        }
+    }
+
+    const fetchCityList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/City/GetList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const cityList = response.data;
+            setCityList(cityList)
+            console.log('City list:', cityList);
+        } catch (error) {
+            console.error('Error fetching city list:', error.message);
+        }
+    }
+
+    useEffect(() => {
+        fetchPatientList()
+        fetchDoctorList()
+        fetchSpecialtyList()
+        fetchStateList()
+        fetchCityList()
+
+    }, [])
 
     const handleCloseModal = () => {
+        setPatientAppointment(initialData)
         setIsModalOpen(false);
+        setSelectedAppointment(null);
+        setPatientAppointmentError(initialErrors)
     };
 
     const handleAddClick = () => {
+        setSelectedAppointment(null);
         setIsModalOpen(true);
     };
 
-    const handleSave = () => {
+    const handleEditClick = (appointment) => {
+        setSelectedAppointment(appointment);
+        setIsModalOpen(true);
+    };
 
+    const validateAppointment = () => {
+        debugger;
+        let hasError = false;
+        const newErrors = {};
+    
+        for (const key in patientAppointment) {
+            if (key !== 'appointmentID' && !patientAppointment[key]) {
+                newErrors[key] = true;
+                hasError = true;
+            } else {
+                newErrors[key] = false;
+            }
+        }
+    
+        setPatientAppointmentError(newErrors);
+    
+        return hasError;
+    };
+
+    const handleSaveAppointment = async () => {
+        debugger
+        if (validateAppointment()) {
+            return;
+        }
+        debugger
+
+        if (selectedAppointment) {
+            const selectedDateTime = new Date(patientAppointment.appointmentDateTime);
+
+            // Get the timezone offset in minutes
+            const timezoneOffset = selectedDateTime.getTimezoneOffset();
+
+            // Adjust the date and time by subtracting the timezone offset
+            selectedDateTime.setMinutes(selectedDateTime.getMinutes() - timezoneOffset);
+
+            // Convert the adjusted date and time to ISO 8601 format
+            const isoDateTime = selectedDateTime.toISOString();
+            console.log("updateData", patientAppointment)
+            const updatedPatientData = {
+                "appointmentID": patientAppointment.appointmentID,
+                "appointmentDateTime": isoDateTime,
+                "firstName": patientAppointment.firstName,
+                "lastName": patientAppointment.lastName,
+                "fullName": patientAppointment.fullName,
+                "dob": patientAppointment.dob,
+                "gender": parseInt(patientAppointment.gender),
+                "mobileNo": patientAppointment.mobileNo,
+                "maritalStatus": parseInt(patientAppointment.maritalStatus),
+                "address": patientAppointment.address,
+                "stateID": parseInt(patientAppointment.stateID),
+                "cityID": parseInt(patientAppointment.cityID),
+                "reasonForAppointment": patientAppointment.reasonForAppointment,
+                "specialityID": parseInt(patientAppointment.specialityID),
+                "doctorID": parseInt(patientAppointment.doctorID)
+            }
+            try {
+                const response = await axios.put(`https://localhost:7137/api/Patient/Update/`, updatedPatientData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('Patient updated successfully:');
+                fetchPatientList();
+                setPatientAppointment(initialData)
+                setPatientAppointmentError(initialErrors)
+            } catch (error) {
+                console.error('Error updating patient:', error.message);
+            }
+        } else {
+
+            console.log("first", patientAppointment)
+            const selectedDateTime = new Date(patientAppointment.appointmentDateTime);
+
+            // Get the timezone offset in minutes
+            const timezoneOffset = selectedDateTime.getTimezoneOffset();
+
+            // Adjust the date and time by subtracting the timezone offset
+            selectedDateTime.setMinutes(selectedDateTime.getMinutes() - timezoneOffset);
+
+            // Convert the adjusted date and time to ISO 8601 format
+            const isoDateTime = selectedDateTime.toISOString();
+            const patientData = {
+                "appointmentID": 0,
+                "appointmentDateTime": isoDateTime,
+                "firstName": patientAppointment.firstName,
+                "lastName": patientAppointment.lastName,
+                "fullName": patientAppointment.fullName,
+                "dob": patientAppointment.dob,
+                "gender": parseInt(patientAppointment.gender),
+                "mobileNo": patientAppointment.mobileNo,
+                "maritalStatus": parseInt(patientAppointment.maritalStatus),
+                "address": patientAppointment.address,
+                "stateID": parseInt(patientAppointment.stateID),
+                "cityID": parseInt(patientAppointment.cityID),
+                "reasonForAppointment": patientAppointment.reasonForAppointment,
+                "specialityID": parseInt(patientAppointment.specialityID),
+                "doctorID": parseInt(patientAppointment.doctorID)
+            }
+
+            try {
+                const response = await axios.post('https://localhost:7137/api/Patient/Insert', patientData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = response.data;
+                console.log('Patient inserted successfully:', data);
+                setPatientAppointment(initialData)
+                setPatientAppointmentError(initialErrors)
+                fetchPatientList();
+            } catch (error) {
+                console.error('Error inserting patient:', error.message);
+            }
+        }
         setIsModalOpen(false);
     };
 
+    const handleDeleteAppointment = async (appointmentId) => {
+        try {
+            const response = await axios.delete(`https://localhost:7137/api/Patient/Delete/${appointmentId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = response.data;
+            fetchPatientList()
+            console.log('Patient deleted successfully:');
+        } catch (error) {
+            console.error('Error deleting patient:', error.message);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        // if (selectedAppointment) {
+        //     setSelectedAppointment(prevState => ({
+        //         ...prevState,
+        //         [name]: value
+        //     }));
+        // } 
+        // else {
+        setPatientAppointment(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+        setPatientAppointmentError({
+            ...patientAppointmentError, [name]: false
+        })
+        // }
+    };
+
+    const handleDateChange = (value) => {
+        setPatientAppointment({ ...patientAppointment, dob: value });
+        setPatientAppointmentError({...patientAppointmentError,dob:false})
+    };
+    const handleDateTimeChange = (date) => {
+        console.log("dateandtime", date._d)
+        setPatientAppointment({ ...patientAppointment, appointmentDateTime: date._d });
+        setPatientAppointmentError({...patientAppointmentError,appointmentDateTime:false})
+    };
+
+    const handleDoctorChange = (selectedOption) => {
+        setPatientAppointment({ ...patientAppointment, doctorID: selectedOption.value });
+        setPatientAppointmentError({...patientAppointmentError,doctorID:false})
+    };
+    const handleSpecialtyChange = (selectedOption) => {
+        setPatientAppointment({ ...patientAppointment, specialityID: selectedOption.value });
+        setPatientAppointmentError({...patientAppointmentError,specialityID:false})
+    };
+    const handleStateChange = (selectedOption) => {
+        setPatientAppointment({ ...patientAppointment, stateID: selectedOption.value });
+        setPatientAppointmentError({...patientAppointmentError,stateID:false})
+        let filteredCities = cityList.filter(city => city.StateID === parseInt(selectedOption.value));
+        setFilterCity(filteredCities)
+    };
+
+    const handleCityChange = (selectedOption) => {
+        setPatientAppointment({ ...patientAppointment, cityID: selectedOption.value });
+        setPatientAppointmentError({...patientAppointmentError,cityID:false})
+    };
+
+
     return (
-        <div className="container " style={{ height: "100vh" }}>
+        <div className="container" style={{ height: "100vh" }}>
             <div className="w-100 d-flex justify-content-between">
                 <h3>Appointment List</h3>
-                <Button variant="primary" onClick={handleAddClick} >
-                    Add
-                </Button>
+                <Button variant="primary" onClick={handleAddClick}>Add</Button>
             </div>
-
-            <table className="container text-center">
+            <Table striped bordered hover>
                 <thead>
                     <tr>
                         <th>S.No.</th>
-                        <th>Appt No</th>
-                        <th>Appt Date & Time</th>
                         <th>Patient Name</th>
-                        <th>DOB</th>
                         <th>Gender</th>
-                        <th>Mobile</th>
-                        <th>Reason For Appointment</th>
-                        <th></th>
+                        <th>Doctor Name</th>
+                        <th>Specialty</th>
+                        <th>Education</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {/* {bills?.map((bill) => (
-<tr key={bill?.primaryKeyID}>
-  <td>{bill?.primaryKeyID}</td>
-  <td>{bill?.billNo}</td>
-  <td>{bill?.billDate.substr(0,10)}</td>
-  <td>{bill?.customerName}</td>
-  <td>{bill?.netAmount}</td>
-  <td>{bill?.remarks && bill.remarks.replace(/<[^>]*>/g, '').substring(0, 50)}</td>
-  <td className="d-flex">
-    <Button className="mx-2" variant="info" onClick={() => handleEditClick(bill.billID)}>
-      Edit
-    </Button>
-    <Button
-      variant="danger"
-      onClick={() => handleDeleteClick(bill.billID)}
-    >
-      Delete
-    </Button>
-  </td>
-</tr>
-))} */}
+                    {appointments.map((appointment, index) => (
+                        <tr key={appointment?.AppointmentID}>
+                            <td>{index + 1}</td>
+                            <td>{appointment?.FullName}</td>
+                            <td>
+                                {appointment?.Gender === 0 && 'Male'}
+                                {appointment?.Gender === 1 && 'Female'}
+                                {appointment?.Gender === 2 && 'Others'}
+                            </td>
+                            <td>{appointment?.DoctorName}</td>
+                            <td>{appointment?.SpecialityName}</td>
+                            <td>{appointment?.education}</td>
+                            <td>
+                                <Button variant="info" onClick={() => handleEditClick(appointment)}>Edit</Button>
+                                <Button variant="danger" onClick={() => handleDeleteAppointment(appointment.AppointmentID)}>Delete</Button>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
-            </table>
-
-            <Modal show={isModalOpen} onHide={handleCloseModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Appointment Entry</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-
-                    <Form>
-                        <div className='d-flex '>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>Item Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>Item Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>Item Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                        </div>
-                        <div className='d-flex flex-wrap'>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>Patient First Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>Last Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>Full Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="itemName">
-                                <Form.Label>DOB</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="gender">
-                                <Form.Label>Gender</Form.Label>
-                                <Form.Control as="select" value={gender} onChange={(e) => setGender(e.target.value)}>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="others">Others</option>
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="mobile">
-                                <Form.Label>Mobile No.</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="marital">
-                                <Form.Label>Marital Status</Form.Label>
-                                <Form.Control as="select" value={gender} onChange={(e) => setGender(e.target.value)}>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="others">Others</option>
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="address">
-                                <Form.Label>Address</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={itemName}
-                                    onChange={(e) => setItemName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="state">
-                                <Form.Label>State</Form.Label>
-                                <Form.Control as="select" value={gender} onChange={(e) => setGender(e.target.value)}>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="others">Others</option>
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="city">
-                                <Form.Label>City</Form.Label>
-                                <Form.Control as="select" value={gender} onChange={(e) => setGender(e.target.value)}>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="others">Others</option>
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="reason">
-                                <Form.Label>Reason For Appointment</Form.Label>
-                                <Form.Control as="select" value={gender} onChange={(e) => setGender(e.target.value)}>
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="others">Others</option>
-                                </Form.Control>
-                            </Form.Group>
-                        </div>
-                        <div>
-                            <Form.Group controlId="doctorName">
-                                <Form.Label>Doctor Name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={doctorName}
-                                    onChange={(e) => setDoctorName(e.target.value)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId="specialty">
-                                <Form.Label>Specialty</Form.Label>
-                                <Form.Control as="select" value={specialty} onChange={(e) => setSpecialty(e.target.value)}>
-                                    <option value="">Select Specialty</option>
-                                    <option value="Cardiology">Cardiology</option>
-                                    <option value="Dermatology">Dermatology</option>
-                                    <option value="Endocrinology">Endocrinology</option>
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="education">
-                                <Form.Label>Education</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={education}
-                                    onChange={(e) => setEducation(e.target.value)}
-                                />
-                            </Form.Group>
-                        </div>
-
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={handleSave}>
-                        Save
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
+            </Table>
+            <AppointmentModal
+                show={isModalOpen}
+                handleClose={handleCloseModal}
+                handleSave={handleSaveAppointment}
+                selectedAppointment={selectedAppointment}
+                patientAppointment={patientAppointment}
+                handleChange={handleChange}
+                handleDateChange={handleDateChange}
+                handleDateTimeChange={handleDateTimeChange}
+                doctorsList={doctorsList}
+                handleDoctorChange={handleDoctorChange}
+                specialtiesList={specialtiesList}
+                handleSpecialtyChange={handleSpecialtyChange}
+                stateList={stateList}
+                handleStateChange={handleStateChange}
+                cityList={selectedAppointment ? cityList : filterCity}
+                handleCityChange={handleCityChange}
+                setPatientAppointment={setPatientAppointment}
+                patientAppointmentError={patientAppointmentError}
+            />
         </div>
-    )
-}
+    );
+};
 
-export default AppointmentList
+export default AppointmentList;
