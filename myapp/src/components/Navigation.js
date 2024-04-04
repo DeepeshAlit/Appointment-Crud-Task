@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import menuIcon from "../assests/menu.png"
+import { Button } from 'react-bootstrap';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const [isToken, setIsToken] = useState(false);
+  const[showNavigation,setShowNavigation] = useState(false)
   const token = localStorage.getItem("token");
   useEffect(() => {
     if (token) {
@@ -25,7 +28,9 @@ const Navigation = () => {
     <div>
       {isToken && <div className="container-fluid">
       <div className="row">
-        <nav className="col-md-2 d-none d-md-block bg-light sidebar">
+        <Button className='d-md-none' onClick={()=>setShowNavigation(!showNavigation)} ><img src={menuIcon} alt="image" style={{ width: "10px", height: "10px" }}  /></Button>
+        <nav className={`col-md-2 d-md-block bg-light sidebar ${showNavigation ? 'd-block' : 'd-none'}`}>
+
           <div className="sidebar-sticky">
             <ul className="nav flex-column">
               <li className="nav-item">

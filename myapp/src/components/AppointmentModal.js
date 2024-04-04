@@ -62,15 +62,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
             </Modal.Header>
             <Modal.Body>
                 <Form>
-                    <div className=' '>
-                        {/* <Form.Group controlId="itemName">
-                            <Form.Label>Item Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={itemName}
-                                onChange={(e) => setItemName(e.target.value)}
-                            />
-                        </Form.Group> */}
+                    <div >
                         <Form.Group controlId="appointmentDateTime">
                             <Form.Label>Appointment Date and Time</Form.Label>
                             <Datetime
@@ -82,7 +74,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                         </Form.Group>
 
                     </div>
-                    <div className=''>
+                    <div >
                         <div className='d-flex '>
                         <Form.Group controlId="firstName">
                             <Form.Label>First Name</Form.Label>
@@ -127,7 +119,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.dob ? "Enter DOB" : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="gender" className=''>
+                        <Form.Group controlId="gender" >
                             <Form.Label>Gender</Form.Label>
                             <Form.Control as="select" value={patientAppointment.gender} onChange={handleChange} name='gender' style={{marginLeft:"-15px"}}>
                                 <option value="">Select Gender</option>
@@ -138,7 +130,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             </Form.Control>
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.gender ? "Enter Gender " : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="mobileNo" className=''>
+                        <Form.Group controlId="mobileNo" >
                             <Form.Label>Mobile No.</Form.Label>
                             <Form.Control
                                 type="number"
@@ -159,7 +151,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                         </Form.Group>
                         </div>
                         <div className='d-flex'>
-                        <Form.Group controlId="address" className=''>
+                        <Form.Group controlId="address" >
                             <Form.Label>Address</Form.Label>
                             <Form.Control
                                 type="text"

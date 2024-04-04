@@ -310,6 +310,12 @@ const validateReceipt = () => {
         ...receiptError, [name]: false
     })
   };
+
+  const formatReceiptDate = (receiptDate) => {
+    const date = new Date(receiptDate);
+    const formattedDate = date.toISOString().split('T')[0];
+    return formattedDate;
+};
  
 
   return (
@@ -327,8 +333,8 @@ const validateReceipt = () => {
             <th>S.No.</th>
             <th>Receipt No</th>
             <th>Receipt Date</th>
-            <th>Person Name</th>
-            <th>Total Qty</th>
+            {/* <th>Person Name</th> */}
+            {/* <th>Total Qty</th> */}
             <th>Net Amount</th>
             <th>Remarks</th>
             <th>Action</th>
@@ -339,11 +345,11 @@ const validateReceipt = () => {
             <tr key={index}>
               <td>{index + 1}</td>
               <td>{item.ReceiptNo}</td>
-              <td>{item.ReceiptDate}</td>
-              <td>{item.personName}</td>
-              <td>{item.totalQty}</td>
+              <td>{formatReceiptDate(item.ReceiptDate)}</td>
+              {/* <td>{item.personName}</td> */}
+              {/* <td>{item.totalQty}</td> */}
               <td>{item.NetAmount}</td>
-              <td>{item.remarks}</td>
+              <td>{item.Remarks}</td>
               <td className="d-flex">
                 <Button
                   className="mx-2"

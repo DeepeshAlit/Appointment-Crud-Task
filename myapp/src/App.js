@@ -23,7 +23,6 @@ function App() {
             <Route path="/appointment" element={<AppointmentList/>} />
             <Route path="/receipt" element={<ReceiptList/>} />
           </Routes>
-          {/* <Footer/> */}
         </BrowserRouter>
     </div>
   );

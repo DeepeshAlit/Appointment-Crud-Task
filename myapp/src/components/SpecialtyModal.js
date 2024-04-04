@@ -2,10 +2,7 @@ import React, { useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
 const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handleChange,speciality,errors,setErrors,setSpeciality,specialtyError }) => {
-   console.log("specialityqwer",selectedSpecialty)
-
    useEffect(() => {
-    console.log("selectedSpecialty",selectedSpecialty)
     if (selectedSpecialty) {
         setSpeciality({
             ...speciality,
