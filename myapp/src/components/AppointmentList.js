@@ -299,13 +299,6 @@ const AppointmentList = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // if (selectedAppointment) {
-        //     setSelectedAppointment(prevState => ({
-        //         ...prevState,
-        //         [name]: value
-        //     }));
-        // } 
-        // else {
         setPatientAppointment(prevState => ({
             ...prevState,
             [name]: value
@@ -313,7 +306,6 @@ const AppointmentList = () => {
         setPatientAppointmentError({
             ...patientAppointmentError, [name]: false
         })
-        // }
     };
 
     const handleDateChange = (value) => {
@@ -361,7 +353,7 @@ const AppointmentList = () => {
                         <th>Gender</th>
                         <th>Doctor Name</th>
                         <th>Specialty</th>
-                        <th>Education</th>
+                        {/* <th>Education</th> */}
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -377,7 +369,7 @@ const AppointmentList = () => {
                             </td>
                             <td>{appointment?.DoctorName}</td>
                             <td>{appointment?.SpecialityName}</td>
-                            <td>{appointment?.education}</td>
+                            {/* <td>{appointment?.education}</td> */}
                             <td>
                                 <Button variant="info" onClick={() => handleEditClick(appointment)}className="mx-2">Edit</Button>
                                 <Button variant="danger" onClick={() => handleDeleteAppointment(appointment.AppointmentID)}>Delete</Button>
