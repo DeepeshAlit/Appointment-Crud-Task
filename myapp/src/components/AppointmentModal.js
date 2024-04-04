@@ -7,6 +7,7 @@ import Select from "react-select";
 import moment from 'moment';
 
 
+
 const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, handleChange, patientAppointment, handleDateChange, handleDateTimeChange, doctorsList, handleDoctorChange, specialtiesList, handleSpecialtyChange, stateList, handleStateChange, cityList, handleCityChange, setPatientAppointment, patientAppointmentError }) => {
 
     useEffect(() => {
@@ -30,9 +31,10 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                 doctorID: selectedAppointment.DoctorID
             })
         }
-    }, [selectedAppointment]);
+   
 
-    console.log("last", selectedAppointment)
+    }, [selectedAppointment]);
+    console.log("last", patientAppointment)
 
     const formattedDoctorOptions = doctorsList.map(doctor => ({
         label: doctor.DoctorName,
@@ -54,13 +56,13 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
 
 
     return (
-        <Modal show={show} onHide={handleClose}>
+        <Modal show={show} onHide={handleClose} size="lg">
             <Modal.Header closeButton>
                 <Modal.Title>{selectedAppointment ? 'Edit' : 'Add'} Appointment</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
-                    <div className='d-flex '>
+                    <div className=' '>
                         {/* <Form.Group controlId="itemName">
                             <Form.Label>Item Name</Form.Label>
                             <Form.Control
@@ -80,7 +82,8 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                         </Form.Group>
 
                     </div>
-                    <div className='d-flex flex-wrap align-items-end'>
+                    <div className=''>
+                        <div className='d-flex '>
                         <Form.Group controlId="firstName">
                             <Form.Label>First Name</Form.Label>
                             <Form.Control
@@ -113,18 +116,20 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.fullName ? "Enter Full Name" : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="dob" className='d-flex flex-column mx-auto'>
+                        </div>
+                        <div className='d-flex'>
+                        <Form.Group controlId="dob" className='d-flex flex-column'>
                             <Form.Label>Date of Birth</Form.Label>
-                            <DatePicker
+                            <DatePicker className='rounded border  w-75 p-2 '
                                 selected={patientAppointment.dob}
                                 onChange={handleDateChange}
                                 dateFormat="yyyy-MM-dd"
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.dob ? "Enter DOB" : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="gender" className='mx-auto'>
+                        <Form.Group controlId="gender" className=''>
                             <Form.Label>Gender</Form.Label>
-                            <Form.Control as="select" value={patientAppointment.gender} onChange={handleChange} name='gender'>
+                            <Form.Control as="select" value={patientAppointment.gender} onChange={handleChange} name='gender' style={{marginLeft:"-15px"}}>
                                 <option value="">Select Gender</option>
                                 <option value={0}>Male</option>
                                 <option value={1}>Female</option>
@@ -133,7 +138,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             </Form.Control>
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.gender ? "Enter Gender " : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="mobileNo">
+                        <Form.Group controlId="mobileNo" className=''>
                             <Form.Label>Mobile No.</Form.Label>
                             <Form.Control
                                 type="number"
@@ -143,7 +148,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.mobileNo ? "Enter Mobile Number" : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="maritalStatus" className='mx-auto'>
+                        <Form.Group controlId="maritalStatus" className='mx-2'>
                             <Form.Label>Marital Status</Form.Label>
                             <Form.Control as="select" value={patientAppointment.maritalStatus} onChange={handleChange} name='maritalStatus'>
                                 <option value="">Select Status</option>
@@ -152,7 +157,9 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             </Form.Control>
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.maritalStatus ? "Select Marital Status" : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="address" className='mx-auto'>
+                        </div>
+                        <div className='d-flex'>
+                        <Form.Group controlId="address" className=''>
                             <Form.Label>Address</Form.Label>
                             <Form.Control
                                 type="text"
@@ -162,7 +169,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.address ? "Enter Address" : ""}</p>
                         </Form.Group>
-                        <Form.Group controlId="stateID">
+                        <Form.Group controlId="stateID" className='mx-auto'>
                             <Form.Label>State</Form.Label>
                             <Select
                                 options={formattedStateOptions}
@@ -200,6 +207,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.reasonForAppointment ? "Enter Reason For Appointment" : ""}</p>
                         </Form.Group>
+                        </div>
                     </div>
                     <div>
                         <Form.Group controlId="doctorID">
@@ -230,14 +238,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.specialityID ? "Select Specialty" : ""}</p>
                         </Form.Group>
-                        {/* <Form.Group controlId="education">
-                            <Form.Label>Education</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={education}
-                                onChange={(e) => setEducation(e.target.value)}
-                            />
-                        </Form.Group> */}
+                      
                     </div>
 
                 </Form>

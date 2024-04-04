@@ -3,9 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import AppointmentModal from './AppointmentModal';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AppointmentList = () => {
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -51,6 +53,12 @@ const AppointmentList = () => {
         doctorID: false
     }
     const [patientAppointmentError, setPatientAppointmentError] = useState(initialErrors)
+
+    useEffect(()=>{
+        if(!token){
+            navigate('/')
+        }
+    },[])
 
 
     const fetchDoctorList = async () => {
@@ -160,7 +168,7 @@ const AppointmentList = () => {
         const newErrors = {};
     
         for (const key in patientAppointment) {
-            if (key !== 'appointmentID' && !patientAppointment[key]) {
+            if (key !== 'appointmentID' && !patientAppointment[key] && patientAppointment[key] !== 0) {
                 newErrors[key] = true;
                 hasError = true;
             } else {
@@ -172,6 +180,7 @@ const AppointmentList = () => {
     
         return hasError;
     };
+    
 
     const handleSaveAppointment = async () => {
         debugger
@@ -370,7 +379,7 @@ const AppointmentList = () => {
                             <td>{appointment?.SpecialityName}</td>
                             <td>{appointment?.education}</td>
                             <td>
-                                <Button variant="info" onClick={() => handleEditClick(appointment)}>Edit</Button>
+                                <Button variant="info" onClick={() => handleEditClick(appointment)}className="mx-2">Edit</Button>
                                 <Button variant="danger" onClick={() => handleDeleteAppointment(appointment.AppointmentID)}>Delete</Button>
                             </td>
                         </tr>

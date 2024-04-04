@@ -1,23 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Table } from 'react-bootstrap';
 import SpecialtyModal from './SpecialtyModal';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const SpecialtyList = () => {
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [specialties, setSpecialties] = useState([]);
     const [selectedSpecialty, setSelectedSpecialty] = useState(null);
-    // const [specialtyName, setSpecialtyName] = useState('');
-    // const [description, setDescription] = useState('');
-    const [speciality, setSpeciality] = useState({
+    const initialData = {
         SpecialityName: '',
         Description: ''
-    });
-    const [errors,setErrors] = useState({
-        SpecialityName:false,
-        Description:false
+    }
+    const [speciality, setSpeciality] = useState(initialData);
+
+    const initialErrors = {
+        SpecialityName: false,
+        Description: false
+    }
+    const [specialtyError, setSpecialtyError] = useState(initialErrors)
+    const [errors, setErrors] = useState({
+        SpecialityName: false,
+        Description: false
     })
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/')
+        }
+    }, [])
 
 
 
@@ -43,88 +56,67 @@ const SpecialtyList = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedSpecialty(null);
-        // setSpecialtyName('');
-        // setDescription('');
+        setSpecialtyError(initialErrors)
+        setSpeciality(initialData)
     };
 
     const handleAddClick = () => {
         setIsModalOpen(true);
     };
 
-    const validateSpeciality = () => {
+    const validateSpecialty = () => {
         debugger
         let hasError = false;
         const newErrors = {};
 
-        if(selectedSpecialty){
-            const requiredFields = ['SpecialityName', 'Description'];
-
-            requiredFields.forEach(field => {
-                if (!selectedSpecialty[field]) {
-                    newErrors[field] = true;
-                    hasError = true;
-                } else {
-                    newErrors[field] = false;
-                }
-            });
-        
-            setErrors(newErrors);
-            return hasError;
-        }else{
-    
         for (const key in speciality) {
-            if (!speciality[key].trim()) {
+            if (!speciality[key]) {
                 newErrors[key] = true;
                 hasError = true;
             } else {
                 newErrors[key] = false;
             }
         }
-    
-        setErrors(newErrors);
+
+        setSpecialtyError(newErrors);
+
         return hasError;
-        }
-        
     };
 
-    
+
 
     const handleSave = async () => {
-       debugger
-        
+        debugger
+        if (validateSpecialty()) {
+            return;
+        }
         if (selectedSpecialty) {
-            if (validateSpeciality()) {
-                return;
+            const updatedData = {
+
+                specialityID: selectedSpecialty?.SpecialityID,
+                specialityName: speciality?.SpecialityName,
+                isGynac: false,
+                description: speciality?.Description
+
             }
-            
-            const updatedData ={
-                
-                    specialityID: selectedSpecialty?.SpecialityID,
-                    specialityName:selectedSpecialty?.SpecialityName,
-                    isGynac: false,
-                    description: selectedSpecialty?.Description
-                  
-            }
-            
-            console.log("selectedSpecialty",updatedData)
+
+            console.log("selectedSpecialty", updatedData)
             try {
                 const response = await axios.put(`https://localhost:7137/api/Speciality/Update/`, updatedData, {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                  }
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 getSpecialityList();
                 console.log('Speciality updated successfully:');
-              } catch (error) {
+            } catch (error) {
                 console.error('Error updating speciality:', error.message);
-              }
+            }
 
 
         } else {
-            if (validateSpeciality()) {
-                return;
-            }
+
             try {
                 // Add new Specialty
                 const data = {
@@ -149,38 +141,30 @@ const SpecialtyList = () => {
 
     const handleEditClick = (specialt) => {
         setSelectedSpecialty(specialt);
-        // setSpeciality({
-        //     specialtyName: specialt.SpecialityName,
-        //     description: specialt.Description
-        // });
         setIsModalOpen(true);
     };
-    const handleDeleteClick = async(id) => {
+    const handleDeleteClick = async (id) => {
         try {
             const response = await axios.delete(`https://localhost:7137/api/Speciality/Delete/${id}`, {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             getSpecialityList();
             console.log('Speciality deleted successfully:');
-          } catch (error) {
+        } catch (error) {
             console.error('Error deleting speciality:', error.message);
-          }
+        }
     };
     const handleChange = (e) => {
         const { name, value } = e.target;
-        if (selectedSpecialty) {
-            setSelectedSpecialty(prevState => ({
-                ...prevState,
-                [name]: value
-            }));
-        } else {
-            setSpeciality(prevState => ({
-                ...prevState,
-                [name]: value
-            }));
-        }
+        setSpeciality(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+        setSpecialtyError({
+            ...specialtyError, [name]: false
+        })
     };
 
 
@@ -192,13 +176,13 @@ const SpecialtyList = () => {
                     Add
                 </Button>
             </div>
-            <table className="container text-center">
+            <Table striped bordered hover>
                 <thead>
                     <tr>
                         <th>S.No.</th>
                         <th>Specialty Name</th>
                         <th>Description</th>
-                        <th></th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -218,7 +202,7 @@ const SpecialtyList = () => {
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </Table>
             <SpecialtyModal
                 show={isModalOpen}
                 handleClose={handleCloseModal}
@@ -228,6 +212,9 @@ const SpecialtyList = () => {
                 selectedSpecialty={selectedSpecialty}
                 errors={errors}
                 setErrors={setErrors}
+                setSpeciality={setSpeciality}
+                specialtyError={specialtyError}
+
             />
         </div>
     );

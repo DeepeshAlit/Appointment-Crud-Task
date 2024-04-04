@@ -1,33 +1,71 @@
 // ReceiptModal.js
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import React, { useState, useEffect } from "react";
+import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import Select from "react-select";
 
-const ReceiptModal = ({ show, handleClose, handleSave, receipt, receiptData, handleDateChange, handleChange, handleItemChange, setReceiptData }) => {
-    // const [totalAmount, setTotalAmount] = useState(0);
-    // const [netAmount, setNetAmount] = useState(0);
-    // const [items, setItems] = useState(receipt ? receipt.billItems : []);
+const ReceiptModal = ({
+    show,
+    handleClose,
+    handleSave,
+    selectedReceipt,
+    receiptData,
+    handleDateChange,
+    handleChange,
+    setReceiptData,
+    itemList,
+    receiptError,
+    setReceiptError
+}) => {
 
-    // useEffect(() => {
-    //     if (receipt && receipt.totalDiscountAmount !== undefined) {
-    //         const calculateTotalAmount = () => {
-    //             const total = items.reduce((total, row) => total + row.amount, 0);
-    //             setTotalAmount(total);
-    //             setNetAmount(total - parseFloat(receipt.totalDiscountAmount));
-    //         };
-    //         calculateTotalAmount();
-    //     }
-    // }, [receipt, items]);
+  
 
-    const handleRowChange = (index, field, value) => {
-        // const updatedItems = [...items];
-        // updatedItems[index][field] = value;
-        // setItems(updatedItems);
-    };
+ 
+    const formattedItemOptions = itemList.map(item => ({
+        label: item.ItemName,
+        value: item.ItemID
+    }));
+
+    console.log("formateditem", formattedItemOptions)
+
+
+    const dataDetail = selectedReceipt?.ReceiptDetail.map((item) => {
+        console.log("item", item.Rate)
+        return {
+            receiptDetailID: item.ReceiptDetailID,
+            receiptID: item.ReceiptID,
+            itemID: item.ItemID,
+            quantity: item.Quantity,
+            rate: item.Rate,
+            discount: item.Discount,
+            amount: item.Amount,
+            itemName: "",
+            unit: "",
+            grossAmount: 0,
+            discountPercent: 0,
+        };
+    })
+
+    useEffect(() => {
+        console.log("object", selectedReceipt)
+        if (selectedReceipt) {
+            setReceiptData({
+                ...receiptData,
+                receiptNo: selectedReceipt.ReceiptNo,
+                personName: "",
+                receiptDate: selectedReceipt.ReceiptDate,
+                doctorID: selectedReceipt.DoctorID,
+                netAmount: selectedReceipt.NetAmount,
+                remarks: selectedReceipt.Remarks,
+                receiptDetail: dataDetail
+            });
+        }
+        console.log("received", receiptData.receiptDetail)
+    }, [selectedReceipt]);
 
     const handleAddRow = () => {
-        setReceiptData(prevState => ({
+        setReceiptData((prevState) => ({
             ...prevState,
             receiptDetail: [
                 ...prevState.receiptDetail,
@@ -39,12 +77,12 @@ const ReceiptModal = ({ show, handleClose, handleSave, receipt, receiptData, han
                     rate: 0,
                     discount: 0,
                     amount: 0,
-                    itemName: '',
-                    unit: '',
+                    itemName: "",
+                    unit: "",
                     grossAmount: null,
                     discountPercent: null,
-                }
-            ]
+                },
+            ],
         }));
     };
 
@@ -55,6 +93,7 @@ const ReceiptModal = ({ show, handleClose, handleSave, receipt, receiptData, han
 
     // Calculate discount amount
     const calculateDiscountAmount = (item) => {
+        console.log("calculated value", item)
         return (item.quantity * item.rate * item.discountPercent) / 100;
     };
 
@@ -62,15 +101,42 @@ const ReceiptModal = ({ show, handleClose, handleSave, receipt, receiptData, han
     const calculateAmount = (item) => {
         const grossAmount = calculateGrossAmount(item);
         const discountAmount = calculateDiscountAmount(item);
-        const amnt =grossAmount - discountAmount;
-         
+        const amnt = grossAmount - discountAmount;
+        item["amount"] = amnt;
         return grossAmount - discountAmount;
+    };
+    const totalAmount = receiptData.receiptDetail.reduce(
+        (total, detail) => total + detail.amount,
+        0
+    );
+    useEffect(() => {
+        setReceiptData({
+            ...receiptData,
+            netAmount: totalAmount,
+        });
+    }, [totalAmount]);
+
+    const totalQuantity = receiptData.receiptDetail.reduce(
+        (total, detail) => total + parseInt(detail.quantity),
+        0
+    );
+
+    const handleItemChange = (selectedItem, index, item) => {
+        console.log("selectedItem", selectedItem, index, item);
+        const updatedItems = [...receiptData.receiptDetail];
+        updatedItems[index].itemID = selectedItem.value;
+        setReceiptData({
+            ...receiptData,
+            receiptDetail: updatedItems,
+        });
+        item["itemID"] = selectedItem.value;
+        setReceiptError({...receiptError,receiptDetail:false})
     };
 
 
 
     return (
-        <Modal show={show} onHide={handleClose}>
+        <Modal show={show} onHide={handleClose} size="lg">
             <Modal.Header closeButton>
                 <Modal.Title>Receipt</Modal.Title>
             </Modal.Header>
@@ -78,95 +144,114 @@ const ReceiptModal = ({ show, handleClose, handleSave, receipt, receiptData, han
                 <Form>
                     <Form.Group controlId="receiptNo">
                         <Form.Label>Receipt No</Form.Label>
-                        <Form.Control type="text" readOnly value={receiptData.receiptNo} name='receiptNo' />
+                        <Form.Control
+                            type="text"
+                            readOnly
+                            value={receiptData.receiptNo}
+                            name="receiptNo"
+                        />
                     </Form.Group>
-                    <Form.Group controlId="formReceiptDate">
+                    <Form.Group controlId="formReceiptDate" >
                         <Form.Label>Receipt Date</Form.Label>
-                        <DatePicker
+                        <DatePicker className="mt-3 rounded border mx-2"
                             selected={receiptData.receiptDate}
                             onChange={handleDateChange}
                             dateFormat="yyyy-MM-dd"
                         />
+                        <p style={{ fontSize: "x-small", color: "red" }}>{receiptError.receiptDate ? "Please Select Date" : ""}</p>
+
                     </Form.Group>
                     <Form.Group controlId="personName">
                         <Form.Label>Person Name</Form.Label>
-                        <Form.Control type="text" value={receiptData.personName} onChange={handleChange} name='personName' />
+                        <Form.Control
+                            type="text"
+                            value={receiptData.personName}
+                            onChange={handleChange}
+                            name="personName"
+                        />
+                        <p style={{ fontSize: "x-small", color: "red" }}>{receiptError.personName ? "Please Enter Person Name" : ""}</p>
+
                     </Form.Group>
-                    <Form.Group controlId="formItems" className=''>
+                    <Form.Group controlId="formItems" className="">
                         <Form.Label>Items</Form.Label>
                         {receiptData.receiptDetail.map((item, index) => (
-                            <div key={index}>
+                            <div key={index} className="d-flex gap-1">
+                                {console.log("12344", item)}
+
                                 <Col>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Item Name"
-                                        value={receiptData.receiptDetail.itemName}
-                                        onChange={(e) => {
-                                            const updatedItems = [...receiptData.receiptDetail];
-                                            updatedItems[index].itemName = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
-                                        }}
-                                        name='itemName'
-                                    />
+                                    <Form.Group controlId="itemName">
+                                        <Select
+                                            options={formattedItemOptions}
+                                            value={
+                                                formattedItemOptions &&
+                                                formattedItemOptions.find(
+                                                    option => option.value === (item.itemID)
+                                                )
+                                            }
+                                            onChange={(selectedItem) => handleItemChange(selectedItem, index, item)}
+                                        />
+                                    </Form.Group>
                                 </Col>
                                 <Col>
                                     <Form.Control
                                         type="text"
                                         placeholder="Unit"
-                                        value={receiptData.receiptDetail.unit}
+                                        value={item.unit}
                                         onChange={(e) => {
                                             const updatedItems = [...receiptData.receiptDetail];
                                             updatedItems[index].unit = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
+                                            setReceiptData({
+                                                ...receiptData,
+                                                receiptDetail: updatedItems,
+                                            });
+                                            setReceiptError({...receiptError,receiptDetail:false})
                                         }}
-                                        name='unit'
+                                        name="unit"
                                     />
                                 </Col>
                                 <Col>
+                                    {console.log("adfgh", receiptData.receiptDetail[0].rate)}
                                     <Form.Control
                                         type="text"
                                         placeholder="rate"
-                                        value={receiptData.receiptDetail.rate}
+                                        value={item.rate}
                                         onChange={(e) => {
                                             const updatedItems = [...receiptData.receiptDetail];
                                             updatedItems[index].rate = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
+                                            setReceiptData({
+                                                ...receiptData,
+                                                receiptDetail: updatedItems,
+                                            });
+                                            setReceiptError({...receiptError,receiptDetail:false})
                                         }}
-                                        name='rate'
+                                        name="rate"
                                     />
                                 </Col>
                                 <Col>
                                     <Form.Control
                                         type="text"
                                         placeholder="quantity"
-                                        value={receiptData.receiptDetail.quantity}
+                                        value={item.quantity}
                                         onChange={(e) => {
                                             const updatedItems = [...receiptData.receiptDetail];
                                             updatedItems[index].quantity = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
+                                            setReceiptData({
+                                                ...receiptData,
+                                                receiptDetail: updatedItems,
+                                            });
+                                            setReceiptError({...receiptError,receiptDetail:false})
                                         }}
-                                        name='quantity'
+                                        name="quantity"
                                     />
                                 </Col>
                                 <Col>
-                                    {/* <Form.Control
-                                        type="text"
-                                        placeholder="Gross Amount"
-                                        value={receiptData.receiptDetail.grossAmount}
-                                        onChange={(e) => {
-                                            const updatedItems = [...receiptData.receiptDetail];
-                                            updatedItems[index].grossAmount = e.target.value; 
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems }); 
-                                        }}
-                                        name='grossAmount'
-                                    /> */}
                                     <Col>
                                         <Form.Control
                                             type="number"
                                             placeholder="Gross Amount"
                                             value={calculateGrossAmount(item)}
                                             disabled
-                                            name='grossAmount'
+                                            name="grossAmount"
                                         />
                                     </Col>
                                 </Col>
@@ -174,82 +259,75 @@ const ReceiptModal = ({ show, handleClose, handleSave, receipt, receiptData, han
                                     <Form.Control
                                         type="text"
                                         placeholder="Discount %"
-                                        value={receiptData.receiptDetail.discountPercent}
+                                        value={item.discountPercent}
                                         onChange={(e) => {
                                             const updatedItems = [...receiptData.receiptDetail];
                                             updatedItems[index].discountPercent = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
+                                            setReceiptData({
+                                                ...receiptData,
+                                                receiptDetail: updatedItems,
+                                            });
+                                            setReceiptError({...receiptError,receiptDetail:false})
                                         }}
-                                        name='discountPercent'
+                                        name="discountPercent"
                                     />
                                 </Col>
                                 <Col>
-                                    {/* <Form.Control
-                                        type="text"
-                                        placeholder="Discount Amount"
-                                        value={receiptData.receiptDetail.discount}
-                                        onChange={(e) => {
-                                            const updatedItems = [...receiptData.receiptDetail];
-                                            updatedItems[index].discount = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
-                                        }}
-                                        name='discount'
-                                    /> */}
                                     <Form.Control
                                         type="number"
                                         placeholder="Discount Amount"
                                         value={calculateDiscountAmount(item)}
                                         disabled
-                                        name='discount'
+                                        name="discount"
                                     />
                                 </Col>
                                 <Col>
-                                    {/* <Form.Control
-                                        type="text"
-                                        placeholder="Amount"
-                                        value={receiptData.receiptDetail.amount}
-                                        onChange={(e) => {
-                                            const updatedItems = [...receiptData.receiptDetail];
-                                            updatedItems[index].amount = e.target.value;
-                                            setReceiptData({ ...receiptData, receiptDetail: updatedItems });
-                                        }}
-                                        name='amount'
-                                    /> */}
                                     <Form.Control
                                         type="number"
                                         placeholder="Amount"
                                         value={calculateAmount(item)}
                                         disabled
-                                        name='amount'
+                                        name="amount"
                                     />
                                 </Col>
-
                             </div>
                         ))}
+                                <p style={{ fontSize: "x-small", color: "red" }}>{receiptError.receiptDetail ? "Please Provide Item Details" : ""}</p>
+
                         <Button variant="primary" onClick={handleAddRow}>
                             Add Item
                         </Button>
                     </Form.Group>
                     <Form.Group controlId="formTotalQty">
                         <Form.Label>Total Qty</Form.Label>
-                        <Form.Control type="number" value={receipt ? receipt.totalQty : 0} onChange={(e) => handleSave({ ...receipt, totalQty: parseInt(e.target.value) })} />
+                        <Form.Control type="number" value={totalQuantity} disabled />
                     </Form.Group>
                     <Form.Group controlId="formNetAmount">
                         <Form.Label>Net Amount</Form.Label>
-                        <Form.Control type="number" value={receipt ? receipt.netAmount : 0} onChange={(e) => handleSave({ ...receipt, netAmount: parseFloat(e.target.value) })} />
+                        <Form.Control
+                            type="number"
+                            value={receiptData.netAmount}
+                            disabled
+                        />
                     </Form.Group>
                     <Form.Group controlId="remarks">
                         <Form.Label>Remarks</Form.Label>
-                        <Form.Control type="text" value={receiptData.remarks} onChange={handleChange} name='remarks' />
-                    </Form.Group>
+                        <Form.Control
+                            type="text"
+                            value={receiptData.remarks}
+                            onChange={handleChange}
+                            name="remarks"
+                        />
+                        <p style={{ fontSize: "x-small", color: "red" }}>{receiptError.remarks ? "Please Enter Remark" : ""}</p>
 
+                    </Form.Group>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
                     Close
                 </Button>
-                <Button variant="primary" onClick={() => handleSave(receipt)}>
+                <Button variant="primary" onClick={handleSave}>
                     Save
                 </Button>
             </Modal.Footer>

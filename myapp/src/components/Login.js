@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import loginImage from "../assests/scanning.png"
+import { Button } from 'react-bootstrap';
 
 const Login = () => {
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(false)
 
 
-  
+  useEffect(() => {
+    if (token) {
+      navigate("/home")
+    }
+  }, [])
+
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     const data = {
       userName: email,
       password: password
@@ -26,46 +35,51 @@ const Login = () => {
       });
 
       const responseData = await response.json();
-      localStorage.setItem('token',responseData.AuthenticateToken);
+      localStorage.setItem('token', responseData.AuthenticateToken);
 
       console.log(responseData);
       navigate("/home")
 
     } catch (error) {
+      setError(true)
       console.error('Error:', error);
     }
   };
 
   return (
     <div className='container vh-100 align-content-center'>
-      <div className=" d-flex justify-content-evenly border w-75 mx-auto">
+      <div className="  d-flex justify-content-evenly border w-75 mx-auto">
         <div>
-          <img src="logo.png" alt="Logo" />
+          <img src={loginImage} alt="image" style={{ width: "100px", height: "100px" }} className='mt-4' />
         </div>
-        <div>
-          <h2>Login</h2>
-          <form onSubmit={handleSubmit}> 
+        <div className='mt-2'>
+          <h2 className='d-flex justify-content-center'>Login</h2>
+          <form onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email">Email:</label>
-              <input
+              <input className='mx-5 border rounded'
                 type="email"
                 id="email"
                 name="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)} 
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError(false);
+                }}
               />
             </div>
-            <div>
+            <div className='mt-2'>
               <label htmlFor="password">Password:</label>
-              <input
+              <input style={{ marginLeft: "20px" }} className='border rounded'
                 type="password"
                 id="password"
                 name="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)} 
+                onChange={(e) => { setPassword(e.target.value); setError(false); }}
               />
             </div>
-            <button type="submit">Login</button>
+            {<p style={{ fontSize: "x-small", color: "red", marginLeft: "125px" }}>{error ? "Invalid Credential" : ""}</p>}
+            <Button type="submit" style={{ marginLeft: "135px" }} className='my-2'>Login</Button>
           </form>
         </div>
       </div>

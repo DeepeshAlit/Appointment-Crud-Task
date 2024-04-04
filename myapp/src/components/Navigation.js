@@ -35,27 +35,27 @@ const Navigation = () => {
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" activeClassName="active" to="/appointment">
-                  Appointment
+                  Appointments
                 </NavLink>
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" activeClassName="active" to="/receipt">
-                  Receipt
+                  Receipts
                 </NavLink>
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" activeClassName="active" to="/item">
-                  Item
+                  Items
                 </NavLink>
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" activeClassName="active" to="/specialty">
-                  Specialty
+                  Specialties
                 </NavLink>
               </li>
               <li className="nav-item">
                 <NavLink className="nav-link" activeClassName="active" to="/doctor">
-                  Doctor
+                  Doctors
                 </NavLink>
               </li>
               <li className="nav-item">

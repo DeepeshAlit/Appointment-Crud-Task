@@ -1,14 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Table } from 'react-bootstrap';
 import ItemModal from './ItemModal';
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 const ItemList = () => {
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [items, setItems] = useState([]);
-    
+    const [itemsList, setItemsList] = useState([]);
+    const initialData = {
+        itemName: ""
+    }
+    const [item, setItem] = useState(initialData);
+    const initialError = {
+        itemName: false
+    }
+    const [itemError, setItemError] = useState(initialError)
+
+    useEffect(()=>{
+        if(!token){
+            navigate('/')
+        }
+    },[])
 
     const getItemsList = async () => {
         try {
@@ -18,7 +34,7 @@ const ItemList = () => {
                 }
             });
             const data = response.data;
-            setItems(data)
+            setItemsList(data)
         } catch (error) {
             console.error('Error fetching data:', error.message);
         }
@@ -32,32 +48,42 @@ const ItemList = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedItem(null);
+        setItemError(initialData)
+        setItem(initialData)
     };
 
     const handleAddClick = () => {
         setIsModalOpen(true);
     };
 
-    // const checkDuplicate=async(itemName)=>{
-    //     console.log("Duplicate",itemName)
-    //     try {
-    //         const response = await axios.get(`https://localhost:7137/api/Item/CheckDuplicateItemName/${itemName}`, {
-    //           headers: {
-    //             Authorization: `Bearer ${token}`
-    //           }
-    //         });
-    //         const isDuplicate = response;
-    //         console.log(`Item nam`,isDuplicate);
-    //       } catch (error) {
-    //         console.error('Error checking duplicate item name:', error.message);
-    //       }
-    // }
+    const validateItem = () => {
+        debugger
+        let hasError = false;
+        const newErrors = {};
 
-    const handleSave = async (itemName, item) => {
+        for (const key in item) {
+            if (!item[key]) {
+                newErrors[key] = true;
+                hasError = true;
+            } else {
+                newErrors[key] = false;
+            }
+        }
+
+        setItemError(newErrors);
+
+        return hasError;
+    };
+
+    const handleSave = async () => {
+        debugger
+        if (validateItem()) {
+            return;
+        }
         if (selectedItem) {
             const updatedItemData = {
-                itemID: item.ItemID,
-                itemName: itemName
+                itemID: selectedItem.ItemID,
+                itemName: item.itemName
             };
 
             try {
@@ -76,8 +102,7 @@ const ItemList = () => {
             }
         } else {
             // Add new item
-            const newItem = { ItemName: itemName };
-            // checkDuplicate(itemName)
+            const newItem = { ItemName: item.itemName };
             try {
 
                 const response = await axios.post('https://localhost:7137/api/Item/Insert', newItem, {
@@ -116,22 +141,34 @@ const ItemList = () => {
         }
     };
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setItem(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+        setItemError({
+            ...itemError, [name]: false
+        })
+    };
+
+
     return (
         <div className="container" style={{ height: "100vh" }}>
             <div className="w-100 d-flex justify-content-between">
                 <h3>Item List</h3>
                 <Button variant="primary" onClick={handleAddClick}>Add</Button>
             </div>
-            <table className="container text-center">
+            <Table striped bordered hover>
                 <thead>
                     <tr>
                         <th>S.No.</th>
                         <th>Item Name</th>
-                        <th></th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {items.map((item, index) => (
+                    {itemsList.map((item, index) => (
                         <tr key={item.ItemID}>
                             <td>{index + 1}</td>
                             <td>{item.ItemName}</td>
@@ -142,12 +179,17 @@ const ItemList = () => {
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </Table>
             <ItemModal
                 show={isModalOpen}
                 handleClose={handleCloseModal}
                 handleSave={handleSave}
-                item={selectedItem}
+                selectedItem={selectedItem}
+                item={item}
+                setItem={setItem}
+                handleChange={handleChange}
+                itemError={itemError}
+
             />
         </div>
     );
