@@ -1,4 +1,3 @@
-// ReceiptModal.js
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import DatePicker from "react-datepicker";
@@ -16,22 +15,16 @@ const ReceiptModal = ({
     setReceiptData,
     itemList,
     receiptError,
-    setReceiptError
+    setReceiptError,
+    darkMode
 }) => {
-
-  
-
  
     const formattedItemOptions = itemList.map(item => ({
         label: item.ItemName,
         value: item.ItemID
     }));
 
-    console.log("formateditem", formattedItemOptions)
-
-
     const dataDetail = selectedReceipt?.ReceiptDetail.map((item) => {
-        console.log("item", item.Rate)
         return {
             receiptDetailID: item.ReceiptDetailID,
             receiptID: item.ReceiptID,
@@ -133,14 +126,29 @@ const ReceiptModal = ({
         setReceiptError({...receiptError,receiptDetail:false})
     };
 
+    const customStyles = {
+        control: provided => ({
+            ...provided,
+            backgroundColor: darkMode ? 'bg-dark' : 'bg-light', // Change background color based on darkMode
 
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected ? (darkMode ? '#333' : '#007bff') : (darkMode ? '#000' : '#fff'),
+            color: state.isSelected ? '#fff' : (darkMode ? '#fff' : '#000'),
+        }),
+        singleValue: provided => ({
+            ...provided,
+            color: darkMode ? '#fff' : '#000', // Change text color of the selected value based on darkMode
+        }),
+    };
 
     return (
         <Modal show={show} onHide={handleClose} size="lg">
-            <Modal.Header closeButton>
+            <Modal.Header closeButton className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Modal.Title>Receipt</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Form>
                     <Form.Group controlId="receiptNo">
                         <Form.Label>Receipt No</Form.Label>
@@ -149,11 +157,12 @@ const ReceiptModal = ({
                             readOnly
                             value={receiptData.receiptNo}
                             name="receiptNo"
+                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                     </Form.Group>
                     <Form.Group controlId="formReceiptDate" >
                         <Form.Label>Receipt Date</Form.Label>
-                        <DatePicker className="mt-3 rounded border mx-2"
+                        <DatePicker className={`mt-3 rounded border mx-2 ${darkMode?"bg-dark text-light":"bg-light text-dark"}`}
                             selected={receiptData.receiptDate}
                             onChange={handleDateChange}
                             dateFormat="yyyy-MM-dd"
@@ -168,16 +177,15 @@ const ReceiptModal = ({
                             value={receiptData.personName}
                             onChange={handleChange}
                             name="personName"
+                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                         <p style={{ fontSize: "x-small", color: "red" }}>{receiptError.personName ? "Please Enter Person Name" : ""}</p>
 
                     </Form.Group>
-                    <Form.Group controlId="formItems" className="">
+                    <Form.Group controlId="formItems" >
                         <Form.Label>Items</Form.Label>
                         {receiptData.receiptDetail.map((item, index) => (
                             <div key={index} className="d-flex gap-1">
-                                {console.log("12344", item)}
-
                                 <Col>
                                     <Form.Group controlId="itemName">
                                         <Select
@@ -189,6 +197,7 @@ const ReceiptModal = ({
                                                 )
                                             }
                                             onChange={(selectedItem) => handleItemChange(selectedItem, index, item)}
+                                            styles={customStyles}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -207,10 +216,10 @@ const ReceiptModal = ({
                                             setReceiptError({...receiptError,receiptDetail:false})
                                         }}
                                         name="unit"
+                                        className={`form-control ${darkMode ? 'placeholder-dark' : 'placeholder-light'} ${darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}`}
                                     />
                                 </Col>
                                 <Col>
-                                    {console.log("adfgh", receiptData.receiptDetail[0].rate)}
                                     <Form.Control
                                         type="text"
                                         placeholder="rate"
@@ -225,6 +234,7 @@ const ReceiptModal = ({
                                             setReceiptError({...receiptError,receiptDetail:false})
                                         }}
                                         name="rate"
+                                        className={`form-control ${darkMode ? 'placeholder-dark' : 'placeholder-light'} ${darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}`}
                                     />
                                 </Col>
                                 <Col>
@@ -242,6 +252,7 @@ const ReceiptModal = ({
                                             setReceiptError({...receiptError,receiptDetail:false})
                                         }}
                                         name="quantity"
+                                        className={`form-control ${darkMode ? 'placeholder-dark' : 'placeholder-light'} ${darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}`}
                                     />
                                 </Col>
                                 <Col>
@@ -252,6 +263,7 @@ const ReceiptModal = ({
                                             value={calculateGrossAmount(item)}
                                             disabled
                                             name="grossAmount"
+                                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                                         />
                                     </Col>
                                 </Col>
@@ -270,6 +282,7 @@ const ReceiptModal = ({
                                             setReceiptError({...receiptError,receiptDetail:false})
                                         }}
                                         name="discountPercent"
+                                        className={`form-control ${darkMode ? 'placeholder-dark' : 'placeholder-light'} ${darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}`}
                                     />
                                 </Col>
                                 <Col>
@@ -279,6 +292,7 @@ const ReceiptModal = ({
                                         value={calculateDiscountAmount(item)}
                                         disabled
                                         name="discount"
+                                        className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                                     />
                                 </Col>
                                 <Col>
@@ -288,6 +302,7 @@ const ReceiptModal = ({
                                         value={calculateAmount(item)}
                                         disabled
                                         name="amount"
+                                        className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}    
                                     />
                                 </Col>
                             </div>
@@ -300,7 +315,8 @@ const ReceiptModal = ({
                     </Form.Group>
                     <Form.Group controlId="formTotalQty">
                         <Form.Label>Total Qty</Form.Label>
-                        <Form.Control type="number" value={totalQuantity} disabled />
+                                      
+                        <Form.Control type="number" value={totalQuantity} disabled    className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'} />
                     </Form.Group>
                     <Form.Group controlId="formNetAmount">
                         <Form.Label>Net Amount</Form.Label>
@@ -308,6 +324,7 @@ const ReceiptModal = ({
                             type="number"
                             value={receiptData.netAmount}
                             disabled
+                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                     </Form.Group>
                     <Form.Group controlId="remarks">
@@ -317,13 +334,14 @@ const ReceiptModal = ({
                             value={receiptData.remarks}
                             onChange={handleChange}
                             name="remarks"
+                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                         <p style={{ fontSize: "x-small", color: "red" }}>{receiptError.remarks ? "Please Enter Remark" : ""}</p>
 
                     </Form.Group>
                 </Form>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Button variant="secondary" onClick={handleClose}>
                     Close
                 </Button>

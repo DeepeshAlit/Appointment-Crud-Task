@@ -3,14 +3,16 @@ import { Button, Table, useAccordionButton } from "react-bootstrap";
 import ReceiptModal from "./ReceiptModal";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
-const ReceiptList = () => {
+const ReceiptList = ({darkMode}) => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [receipts, setReceipts] = useState([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [itemList,setItemList] = useState([]);
+  const [deleteReceiptId,setDeleteReceiptId] = useState(null);
 
   const initialData = {
     receiptID: 0,
@@ -48,13 +50,14 @@ const ReceiptList = () => {
     receiptDetail:false
   }
 const [receiptError, setReceiptError] = useState(initialErrors)
+const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); 
+const deleteMessage = "Are you sure you want to delete this Receipt?"
 
 useEffect(()=>{
   if(!token){
       navigate('/')
   }
 },[])
-
 
 const validateReceipt = () => {
   debugger
@@ -96,7 +99,6 @@ const validateReceipt = () => {
 
   return hasError;
 };
-
 
   const fetchReceiptList = async () => {
     try {
@@ -142,8 +144,6 @@ const validateReceipt = () => {
     setReceiptData(initialData)
     setReceiptError(initialErrors)
   };
-
-  console.log("Errors",receiptError)
 
   const handleAddClick = () => {
     setSelectedReceipt(null); 
@@ -198,12 +198,9 @@ const validateReceipt = () => {
         console.error("Error updating receipt:", error.message);
       }
     } else {
-      
-      console.log("dataAdd", receiptData);
       if (validateReceipt()) {
         return;
     }
-
       const extractReceiptDetailItems = () => {
         const extractedItems = receiptData.receiptDetail.map((detail) => ({
           receiptDetailID: detail.receiptDetailID,
@@ -240,7 +237,6 @@ const validateReceipt = () => {
             },
           }
         );
-
         const data = response.data;
         console.log("Receipt inserted successfully:", data);
         setReceiptData(initialData)
@@ -263,9 +259,7 @@ const validateReceipt = () => {
           },
         }
       );
-      // Assuming the response contains receipt data
       const receiptData = response.data;
-     
       setSelectedReceipt({ ...receiptData, receiptID: receiptId });
       console.log("Receiptby id data:", receiptData);
     } catch (error) {
@@ -281,17 +275,21 @@ const validateReceipt = () => {
   };
 
   const handleDeleteClick = async(id) => {
+    setDeleteReceiptId(id)
+    setIsDeleteModalOpen(true); 
+  };
+
+  const handleDeleteConfirmed = async () => {
     try {
-      const response = await axios.delete(`https://localhost:7137/api/Receipt/Delete/${id}`, {
+      const response = await axios.delete(`https://localhost:7137/api/Receipt/Delete/${deleteReceiptId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      const data = response.data;
-      console.log('Receipt deleted successfully:', data);
       fetchReceiptList();
+        setIsDeleteModalOpen(false); 
     } catch (error) {
-      console.error('Error deleting receipt:', error.message);
+        console.error('Error deleting item:', error.message);
     }
   };
 
@@ -316,18 +314,20 @@ const validateReceipt = () => {
     const formattedDate = date.toISOString().split('T')[0];
     return formattedDate;
 };
- 
+
+const handleDeleteModalClose = () => {
+  setIsDeleteModalOpen(false); 
+};
 
   return (
     <div className="container" style={{ height: "100vh" }}>
-      <div className="w-100 d-flex justify-content-between">
+      <div className="w-100 d-flex justify-content-between my-2">
         <h3>Receipt List</h3>
         <Button variant="primary" onClick={handleAddClick}>
           Add
         </Button>
       </div>
-
-      <Table striped bordered hover>
+      <Table striped bordered hover variant={darkMode?"dark":"light"}>
         <thead>
           <tr>
             <th>S.No.</th>
@@ -341,7 +341,7 @@ const validateReceipt = () => {
           </tr>
         </thead>
         <tbody>
-          {receipts.map((item, index) => (
+          {receipts?.map((item, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
               <td>{item.ReceiptNo}</td>
@@ -382,7 +382,15 @@ const validateReceipt = () => {
         itemList={itemList}
         receiptError={receiptError}
         setReceiptError={setReceiptError}
+        darkMode={darkMode}
       />
+       <DeleteConfirmationModal
+                show={isDeleteModalOpen}
+                handleClose={handleDeleteModalClose}
+                handleDelete={handleDeleteConfirmed} 
+                deleteMessage={deleteMessage}
+                darkMode={darkMode}
+            />
     </div>
   );
 };

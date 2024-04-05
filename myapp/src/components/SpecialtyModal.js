@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handleChange,speciality,errors,setErrors,setSpeciality,specialtyError }) => {
+const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handleChange,speciality,setSpeciality,specialtyError,darkMode }) => {
    useEffect(() => {
     if (selectedSpecialty) {
         setSpeciality({
@@ -14,10 +14,10 @@ const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handl
    
     return (
         <Modal show={show} onHide={handleClose}>
-            <Modal.Header closeButton>
+            <Modal.Header closeButton className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Modal.Title>{selectedSpecialty ? 'Edit' : 'Add'} Specialty</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Form>
                     <Form.Group controlId="SpecialityName">
                         <Form.Label>Specialty Name</Form.Label>
@@ -26,6 +26,7 @@ const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handl
                             value={speciality.SpecialityName}
                             onChange={handleChange}
                             name="SpecialityName"
+                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                           <p style={{ fontSize: "x-small", color: "red" }}>{specialtyError.SpecialityName ? "Please Enter Name" : ""}</p>
                     </Form.Group>
@@ -36,12 +37,13 @@ const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handl
                             value={speciality.Description}
                             onChange={handleChange}
                             name="Description"
+                            className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                         <p style={{ fontSize: "x-small", color: "red" }}>{specialtyError.Description ? "Please Enter Description" : ""}</p>
                     </Form.Group>
                 </Form>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Button variant="secondary" onClick={handleClose}>
                     Close
                 </Button>

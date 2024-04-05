@@ -10,13 +10,11 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false)
 
-
   useEffect(() => {
     if (token) {
       navigate("/home")
     }
   }, [])
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,8 +46,8 @@ const Login = () => {
 
   return (
     <div className='container vh-100 align-content-center'>
-      <div className="  d-flex justify-content-evenly border w-75 mx-auto">
-        <div>
+      <div className="  d-flex justify-content-evenly border w-md-75 mx-auto p-1">
+        <div className='d-none d-md-block'>
           <img src={loginImage} alt="image" style={{ width: "100px", height: "100px" }} className='mt-4' />
         </div>
         <div className='mt-2'>
@@ -57,7 +55,7 @@ const Login = () => {
           <form onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email">Email:</label>
-              <input className='mx-5 border rounded'
+              <input  className='border rounded w-auto ms-5  ps-2'
                 type="email"
                 id="email"
                 name="email"
@@ -68,9 +66,9 @@ const Login = () => {
                 }}
               />
             </div>
-            <div className='mt-2'>
+            <div className='mt-2  '>
               <label htmlFor="password">Password:</label>
-              <input style={{ marginLeft: "20px" }} className='border rounded'
+              <input  className='border rounded w-auto ms-4 ps-2'
                 type="password"
                 id="password"
                 name="password"

@@ -3,11 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import Select from "react-select";
 
-const DoctorModal = ({ show, handleClose, handleSave, selectedDoctor,  doctor, handleChange,setDoctor,doctorError,specialtiesList,handleSpecialtyChange }) => {
-console.log("SelectedDR",selectedDoctor)
-console.log("Errors",doctorError)
-console.log("Specialty List ",specialtiesList)
-
+const DoctorModal = ({ show, handleClose, handleSave, selectedDoctor,  doctor, handleChange,setDoctor,doctorError,specialtiesList,handleSpecialtyChange ,darkMode,duplicateError}) => {
 
 useEffect(() => {
     console.log("selectedDoctor",selectedDoctor)
@@ -26,16 +22,33 @@ const formattedSpecialtyOptions = specialtiesList.map(specialty => ({
     value: specialty.SpecialityID
 }));
 
+const customStyles = {
+    control: provided => ({
+        ...provided,
+        backgroundColor: darkMode ? 'bg-dark' : 'bg-light', // Change background color based on darkMode
+
+    }),
+    option: (provided, state) => ({
+        ...provided,
+        backgroundColor: state.isSelected ? (darkMode ? '#333' : '#007bff') : (darkMode ? '#000' : '#fff'),
+        color: state.isSelected ? '#fff' : (darkMode ? '#fff' : '#000'),
+    }),
+    singleValue: provided => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#000', // Change text color of the selected value based on darkMode
+    }),
+};
+
     return (
         <Modal show={show} onHide={handleClose}>
-            <Modal.Header closeButton>
+            <Modal.Header closeButton className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Modal.Title>{selectedDoctor ? 'Edit' : 'Add'} Doctor</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Form>
                     <Form.Group controlId="DoctorName">
                         <Form.Label>Doctor Name</Form.Label>
-                        <Form.Control type="text" value={doctor?.DoctorName} onChange={handleChange} name="DoctorName" />
+                        <Form.Control type="text" value={doctor?.DoctorName} onChange={handleChange} name="DoctorName" className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}/>
                         <p style={{ fontSize: "x-small", color: "red" }}>{doctorError.DoctorName ? "Please Enter Name" : ""}</p>
                     </Form.Group>
                     <Form.Group controlId="SpecialityID">
@@ -49,17 +62,19 @@ const formattedSpecialtyOptions = specialtiesList.map(specialty => ({
                                     )
                                 }
                                 onChange={handleSpecialtyChange}
+                                styles={customStyles}
                             />
                         <p style={{ fontSize: "x-small", color: "red" }}>{doctorError.SpecialityID ? "Please Select Specialty" : ""}</p>
                     </Form.Group>
                     <Form.Group controlId="education">
                         <Form.Label>Education</Form.Label>
-                        <Form.Control type="text" value={doctor?.Education} onChange={handleChange} name='Education' />
+                        <Form.Control type="text" value={doctor?.Education} onChange={handleChange} name='Education' className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'} />
                         <p style={{ fontSize: "x-small", color: "red" }}>{doctorError.Education ? "Please Enter Eduction" : ""}</p>
                     </Form.Group>
                 </Form>
+                <p style={{ fontSize: "x-small", color: "red" }}>{duplicateError ? "Doctor Already Exists." : ""}</p>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'} >
                 <Button variant="secondary" onClick={handleClose}>Close</Button>
                 <Button variant="primary" onClick={handleSave}>{selectedDoctor ? 'Update' : 'Save'}</Button>
             </Modal.Footer>

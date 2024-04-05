@@ -29,7 +29,7 @@ const Navigation = () => {
       {isToken && <div className="container-fluid">
       <div className="row">
         <Button className='d-md-none' onClick={()=>setShowNavigation(!showNavigation)} ><img src={menuIcon} alt="image" style={{ width: "10px", height: "10px" }}  /></Button>
-        <nav className={`col-md-2 d-md-block bg-light sidebar ${showNavigation ? 'd-block' : 'd-none'}`}>
+        <nav className={`col-md-2 d-md-block  sidebar ${showNavigation ? 'd-block' : 'd-none'}`}>
 
           <div className="sidebar-sticky">
             <ul className="nav flex-column">

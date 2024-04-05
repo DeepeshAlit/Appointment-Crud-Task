@@ -3,14 +3,17 @@ import { Button, Modal, Table } from 'react-bootstrap';
 import DoctorModal from './DoctorModal';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-const DoctorList = () => {
+const DoctorList = ({darkMode}) => {
     const token = localStorage.getItem("token");
     const navigate = useNavigate()
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState(null);
     const [doctorsList, setDoctorsList] = useState([]);
     const [specialtiesList, setSpecialtiesList] = useState([]);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteDoctorId, setDeleteDoctorId] = useState(null);
     const initialData = {
         DoctorName: "",
         SpecialityID: null,
@@ -23,13 +26,15 @@ const DoctorList = () => {
         Education: false,
     }
     const [doctorError, setDoctorError] = useState(initialErrors)
+    const [inUseError,setInUseError] = useState(false)
+    const [duplicateError,setDuplicateError] = useState(false)
+    const deleteMessage = "Are you sure you want to delete this Doctor?"
 
-
-    useEffect(()=>{
-        if(!token){
+    useEffect(() => {
+        if (!token) {
             navigate('/')
         }
-    },[])
+    }, [])
 
     const fetchDoctorList = async () => {
         try {
@@ -75,14 +80,13 @@ const DoctorList = () => {
         setIsModalOpen(false);
         setDoctorError(initialErrors)
         setDoctor(initialData)
-
+        setDuplicateError(false)
     };
 
     const validateDoctor = () => {
         debugger
         let hasError = false;
         const newErrors = {};
-
         for (const key in doctor) {
             if (!doctor[key]) {
                 newErrors[key] = true;
@@ -91,9 +95,7 @@ const DoctorList = () => {
                 newErrors[key] = false;
             }
         }
-
         setDoctorError(newErrors);
-
         return hasError;
     };
 
@@ -120,12 +122,13 @@ const DoctorList = () => {
                 fetchDoctorList();
                 setDoctor(initialData)
                 console.log('Doctor updated successfully:');
+                setIsModalOpen(false);
             } catch (error) {
                 console.error('Error updating doctor:', error.message);
             }
 
         } else {
-
+            // Add New Doctor
             try {
                 const data = {
                     doctorName: doctor?.DoctorName,
@@ -141,13 +144,15 @@ const DoctorList = () => {
                 fetchDoctorList();
                 setDoctor(initialData)
                 console.log('Doctor inserted successfully:');
+                setIsModalOpen(false);
             } catch (error) {
                 console.error('Error inserting doctor:', error.message);
+                if (error.response.data.includes("Cannot accept duplicate doctor name") ){
+                    setDuplicateError(true);
+                }
             }
-
-
         }
-        setIsModalOpen(false);
+        
     };
 
     const handleEditDoctor = (doctor) => {
@@ -155,49 +160,60 @@ const DoctorList = () => {
         setIsModalOpen(true);
     };
 
-    const handleDeleteDoctor = async (doctorId) => {
-        console.log("Doctor", doctorId)
+    const handleDeleteDoctor = async (id) => {
+        setDeleteDoctorId(id)
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirmed = async () => {
         try {
-            const response = await axios.delete(`https://localhost:7137/api/Doctor/Delete/${doctorId}`, {
+            const response = await axios.delete(`https://localhost:7137/api/Doctor/Delete/${deleteDoctorId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             fetchDoctorList();
+            setIsDeleteModalOpen(false);
         } catch (error) {
-            console.error('Error deleting doctor:', error.message);
+            console.error('Error deleting item:', error.message);
+            if (error.response.data.includes("Selected record exists in Patients") ){
+                setInUseError(true);
+            }
         }
     };
 
     const handleChange = (e) => {
         debugger
+        setDuplicateError(false)
         const { name, value } = e.target;
-      
-            setDoctor(prevState => ({
-                ...prevState,
-                [name]: value
-            }));
-            setDoctorError({
-                ...doctorError, [name]: false
-            })
-    
+        setDoctor(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+        setDoctorError({
+            ...doctorError, [name]: false
+        })
     };
 
     console.log("first", doctorError)
 
     const handleSpecialtyChange = (selectedOption) => {
+        setDuplicateError(false)
         setDoctor({ ...doctor, SpecialityID: selectedOption.value });
         setDoctorError({ ...doctorError, SpecialityID: false })
     };
 
+    const handleDeleteModalClose = () => {
+        setIsDeleteModalOpen(false);
+    };
+
     return (
         <div className="container " style={{ height: "100vh" }}>
-            <div className="w-100 d-flex justify-content-between">
+            <div className="w-100 d-flex justify-content-between my-2">
                 <h3>Doctor List</h3>
                 <Button variant="primary" onClick={handleAddClick}>Add</Button>
             </div>
-
-            <Table striped bordered hover>
+            <Table striped bordered hover variant={darkMode?"dark":"light"}>
                 <thead>
                     <tr>
                         <th>S.No.</th>
@@ -215,7 +231,7 @@ const DoctorList = () => {
                             <td>{doctor.SpecialityName}</td>
                             <td>{doctor.Education}</td>
                             <td>
-                                <Button variant="info" onClick={() => handleEditDoctor(doctor)}className="mx-2">Edit</Button>
+                                <Button variant="info" onClick={() => handleEditDoctor(doctor)} className="mx-2">Edit</Button>
                                 <Button variant="danger" onClick={() => handleDeleteDoctor(doctor.DoctorID)}>Delete</Button>
                             </td>
                         </tr>
@@ -234,8 +250,16 @@ const DoctorList = () => {
                 doctorError={doctorError}
                 specialtiesList={specialtiesList}
                 handleSpecialtyChange={handleSpecialtyChange}
-
-
+                darkMode={darkMode}
+                duplicateError={duplicateError}
+            />
+            <DeleteConfirmationModal
+                show={isDeleteModalOpen}
+                handleClose={handleDeleteModalClose}
+                handleDelete={handleDeleteConfirmed}
+                deleteMessage={deleteMessage}
+                darkMode={darkMode}
+                inUseError={inUseError}
             />
         </div>
     );

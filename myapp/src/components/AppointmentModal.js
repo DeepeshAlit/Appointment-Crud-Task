@@ -6,9 +6,7 @@ import 'react-datetime/css/react-datetime.css';
 import Select from "react-select";
 import moment from 'moment';
 
-
-
-const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, handleChange, patientAppointment, handleDateChange, handleDateTimeChange, doctorsList, handleDoctorChange, specialtiesList, handleSpecialtyChange, stateList, handleStateChange, cityList, handleCityChange, setPatientAppointment, patientAppointmentError }) => {
+const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, handleChange, patientAppointment, handleDateChange, handleDateTimeChange, doctorsList, handleDoctorChange, specialtiesList, handleSpecialtyChange, stateList, handleStateChange, cityList, handleCityChange, setPatientAppointment, patientAppointmentError, darkMode, mobileValid }) => {
 
     useEffect(() => {
         if (selectedAppointment) {
@@ -31,7 +29,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                 doctorID: selectedAppointment.DoctorID
             })
         }
-   
+
 
     }, [selectedAppointment]);
     console.log("last", patientAppointment)
@@ -40,165 +38,200 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
         label: doctor.DoctorName,
         value: doctor.DoctorID
     }));
+
     const formattedSpecialtyOptions = specialtiesList.map(specialty => ({
         label: specialty.SpecialityName,
         value: specialty.SpecialityID
     }));
+
     const formattedStateOptions = stateList.map(state => ({
         label: state.StateName,
         value: state.StateID
     }));
+
     const formattedCityOptions = cityList.map(city => ({
         label: city.CityName,
         value: city.CityID
     }));
 
+    const inputStyle = darkMode ? darkModeStyle : lightModeStyle;
+
+    const customStyles = {
+        control: provided => ({
+            ...provided,
+            backgroundColor: darkMode ? 'bg-dark' : 'bg-light', // Change background color based on darkMode
+
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected ? (darkMode ? '#333' : '#007bff') : (darkMode ? '#000' : '#fff'),
+            color: state.isSelected ? '#fff' : (darkMode ? '#fff' : '#000'),
+        }),
+        singleValue: provided => ({
+            ...provided,
+            color: darkMode ? '#fff' : '#000', // Change text color of the selected value based on darkMode
+        }),
+    };
+
+    const minDate = new Date();
+    minDate.setFullYear(minDate.getFullYear() - 10);
 
 
     return (
         <Modal show={show} onHide={handleClose} size="lg">
-            <Modal.Header closeButton>
+            <Modal.Header closeButton className={darkMode ? 'bg-dark text-light' : 'bg-light text-dark'}>
                 <Modal.Title>{selectedAppointment ? 'Edit' : 'Add'} Appointment</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
                 <Form>
                     <div >
-                        <Form.Group controlId="appointmentDateTime">
+                        <Form.Group controlId="appointmentDateTime"  >
                             <Form.Label>Appointment Date and Time</Form.Label>
                             <Datetime
                                 value={moment(patientAppointment.appointmentDateTime)}
                                 onChange={handleDateTimeChange}
-                                inputProps={{ placeholder: 'Select Date and Time' }}
+                                inputProps={{ placeholder: 'Select Date and Time', style: inputStyle }}
+                                className={'bg-light  text-dark'}
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.appointmentDateTime ? "Select Appointment Date & Time" : ""}</p>
                         </Form.Group>
-
                     </div>
                     <div >
                         <div className='d-flex '>
-                        <Form.Group controlId="firstName">
-                            <Form.Label>First Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={patientAppointment.firstName}
-                                onChange={handleChange}
-                                name='firstName'
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.firstName ? "Enter First Name" : ""}</p>
-
-                        </Form.Group>
-                        <Form.Group controlId="lastName" className='mx-auto'>
-                            <Form.Label>Last Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={patientAppointment.lastName}
-                                onChange={handleChange}
-                                name='lastName'
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.lastName ? "Enter Last Name" : ""}</p>
-
-                        </Form.Group>
-                        <Form.Group controlId="fullName">
-                            <Form.Label>Full Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={patientAppointment.fullName}
-                                onChange={handleChange}
-                                name='fullName'
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.fullName ? "Enter Full Name" : ""}</p>
-                        </Form.Group>
+                            <Form.Group controlId="firstName">
+                                <Form.Label>First Name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={patientAppointment.firstName}
+                                    onChange={handleChange}
+                                    name='firstName'
+                                    className={darkMode ? 'bg-dark text-light' : 'bg-light text-dark'}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.firstName ? "Enter First Name" : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="lastName" className='mx-auto'>
+                                <Form.Label>Last Name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={patientAppointment.lastName}
+                                    onChange={handleChange}
+                                    name='lastName'
+                                    className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.lastName ? "Enter Last Name" : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="fullName">
+                                <Form.Label>Full Name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={patientAppointment.fullName}
+                                    onChange={handleChange}
+                                    name='fullName'
+                                    className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.fullName ? "Enter Full Name" : ""}</p>
+                            </Form.Group>
                         </div>
                         <div className='d-flex'>
-                        <Form.Group controlId="dob" className='d-flex flex-column'>
-                            <Form.Label>Date of Birth</Form.Label>
-                            <DatePicker className='rounded border  w-75 p-2 '
-                                selected={patientAppointment.dob}
-                                onChange={handleDateChange}
-                                dateFormat="yyyy-MM-dd"
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.dob ? "Enter DOB" : ""}</p>
-                        </Form.Group>
-                        <Form.Group controlId="gender" >
-                            <Form.Label>Gender</Form.Label>
-                            <Form.Control as="select" value={patientAppointment.gender} onChange={handleChange} name='gender' style={{marginLeft:"-15px"}}>
-                                <option value="">Select Gender</option>
-                                <option value={0}>Male</option>
-                                <option value={1}>Female</option>
-                                <option value={2}>Others</option>
+                            <Form.Group controlId="dob" className='d-flex flex-column'>
+                                <Form.Label>Date of Birth</Form.Label>
+                                <DatePicker className={`rounded border  w-75 p-2 ${darkMode ? "bg-dark text-light" : "bg-light text-dark"}`}
+                                    selected={patientAppointment.dob}
+                                    onChange={handleDateChange}
+                                    dateFormat="yyyy-MM-dd"
+                                    maxDate={minDate}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.dob ? "Enter DOB" : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="gender" >
+                                <Form.Label>Gender</Form.Label>
+                                <Form.Control as="select" value={patientAppointment.gender} onChange={handleChange} name='gender' style={{ marginLeft: "-15px" }} className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
+                                    <option value="">Select Gender</option>
+                                    <option value={0}>Male</option>
+                                    <option value={1}>Female</option>
+                                    <option value={2}>Others</option>
 
-                            </Form.Control>
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.gender ? "Enter Gender " : ""}</p>
-                        </Form.Group>
-                        <Form.Group controlId="mobileNo" >
-                            <Form.Label>Mobile No.</Form.Label>
-                            <Form.Control
-                                type="number"
-                                value={patientAppointment.mobileNo}
-                                onChange={handleChange}
-                                name='mobileNo'
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.mobileNo ? "Enter Mobile Number" : ""}</p>
-                        </Form.Group>
-                        <Form.Group controlId="maritalStatus" className='mx-2'>
-                            <Form.Label>Marital Status</Form.Label>
-                            <Form.Control as="select" value={patientAppointment.maritalStatus} onChange={handleChange} name='maritalStatus'>
-                                <option value="">Select Status</option>
-                                <option value={0}>Married</option>
-                                <option value={1}>UnMarried</option>
-                            </Form.Control>
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.maritalStatus ? "Select Marital Status" : ""}</p>
-                        </Form.Group>
+                                </Form.Control>
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.gender ? "Enter Gender " : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="mobileNo" >
+                                <Form.Label>Mobile No.</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    value={patientAppointment.mobileNo}
+                                    onChange={handleChange}
+                                    name='mobileNo'
+                                    className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
+                                />
+                                {(patientAppointmentError.mobileNo) ? (<p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.mobileNo ? "Enter Mobile Number" : ""}</p>) :
+                                    (<p style={{ fontSize: "x-small", color: "red" }}>{mobileValid ? "Enter 10 digit" : ""}</p>)}
+
+                            </Form.Group>
+                            <Form.Group controlId="maritalStatus" className='mx-2'>
+                                <Form.Label>Marital Status</Form.Label>
+                                <Form.Control as="select" value={patientAppointment.maritalStatus} onChange={handleChange} name='maritalStatus' className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}>
+                                    <option value="">Select Status</option>
+                                    <option value={0}>Married</option>
+                                    <option value={1}>UnMarried</option>
+                                </Form.Control>
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.maritalStatus ? "Select Marital Status" : ""}</p>
+                            </Form.Group>
                         </div>
                         <div className='d-flex'>
-                        <Form.Group controlId="address" >
-                            <Form.Label>Address</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={patientAppointment.address}
-                                onChange={handleChange}
-                                name='address'
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.address ? "Enter Address" : ""}</p>
-                        </Form.Group>
-                        <Form.Group controlId="stateID" className='mx-auto'>
-                            <Form.Label>State</Form.Label>
-                            <Select
-                                options={formattedStateOptions}
-                                value={
-                                    formattedStateOptions &&
-                                    formattedStateOptions.find(
-                                        option => option.value === (patientAppointment.stateID)
-                                    )
-                                }
-                                onChange={handleStateChange}
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.stateID ? "Select State" : ""}</p>
-                        </Form.Group>
-                        <Form.Group controlId="cityID" className='mx-auto'>
-                            <Form.Label>City</Form.Label>
-                            <Select
-                                options={formattedCityOptions}
-                                value={
-                                    formattedCityOptions &&
-                                    formattedCityOptions.find(
-                                        option => option.value === (patientAppointment.cityID)
-                                    )
-                                }
-                                onChange={handleCityChange}
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.cityID ? "Select City" : ""}</p>
-                        </Form.Group>
-                        <Form.Group controlId="reasonForAppointment">
-                            <Form.Label>Reason For Appointment</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={patientAppointment.reasonForAppointment}
-                                onChange={handleChange}
-                                name='reasonForAppointment'
-                            />
-                            <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.reasonForAppointment ? "Enter Reason For Appointment" : ""}</p>
-                        </Form.Group>
+                            <Form.Group controlId="address" >
+                                <Form.Label>Address</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={patientAppointment.address}
+                                    onChange={handleChange}
+                                    name='address'
+                                    className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.address ? "Enter Address" : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="stateID" className='mx-auto'>
+                                <Form.Label>State</Form.Label>
+                                <Select
+
+                                    options={formattedStateOptions}
+                                    value={
+                                        formattedStateOptions &&
+                                        formattedStateOptions.find(
+                                            option => option.value === (patientAppointment.stateID)
+                                        )
+                                    }
+                                    onChange={handleStateChange}
+                                    styles={customStyles}
+
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.stateID ? "Select State" : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="cityID" className='mx-auto'>
+                                <Form.Label>City</Form.Label>
+                                <Select
+                                    options={formattedCityOptions}
+                                    value={
+                                        formattedCityOptions &&
+                                        formattedCityOptions.find(
+                                            option => option.value === (patientAppointment.cityID)
+                                        )
+                                    }
+                                    onChange={handleCityChange}
+                                    styles={customStyles}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.cityID ? "Select City" : ""}</p>
+                            </Form.Group>
+                            <Form.Group controlId="reasonForAppointment">
+                                <Form.Label>Reason For Appointment</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    value={patientAppointment.reasonForAppointment}
+                                    onChange={handleChange}
+                                    name='reasonForAppointment'
+                                    className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
+                                />
+                                <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.reasonForAppointment ? "Enter Reason For Appointment" : ""}</p>
+                            </Form.Group>
                         </div>
                     </div>
                     <div>
@@ -213,6 +246,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                                     )
                                 }
                                 onChange={handleDoctorChange}
+                                styles={customStyles}
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.doctorID ? "Select Doctor" : ""}</p>
                         </Form.Group>
@@ -227,15 +261,14 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                                     )
                                 }
                                 onChange={handleSpecialtyChange}
+                                styles={customStyles}
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.specialityID ? "Select Specialty" : ""}</p>
                         </Form.Group>
-                      
                     </div>
-
                 </Form>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className={darkMode ? 'bg-dark text-light' : 'bg-light text-dark'}>
                 <Button variant="secondary" onClick={handleClose}>Close</Button>
                 <Button variant="primary" onClick={handleSave}>{selectedAppointment ? 'Update' : 'Save'}</Button>
             </Modal.Footer>
@@ -244,3 +277,15 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
 };
 
 export default AppointmentModal;
+
+
+
+const darkModeStyle = {
+    backgroundColor: '#212529',
+    color: '#fff',
+};
+
+const lightModeStyle = {
+    backgroundColor: '#fff',
+    color: '#333',
+};

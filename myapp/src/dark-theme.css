@@ -1,0 +1,35 @@
+
+  body.dark-mode {
+    background-color: #333;
+    color: #fff;
+  }
+
+
+  .table {
+    color: #fff;
+  }
+  
+  .table-dark,
+  .table-dark > th,
+  .table-dark > td,
+  .table-dark > thead > tr > th,
+  .table-dark > tbody > tr > th,
+  .table-dark > tfoot > tr > th,
+  .table-dark > thead > tr > td,
+  .table-dark > tbody > tr > td,
+  .table-dark > tfoot > tr > td {
+    background-color: #444; /* Table background color */
+  }
+
+
+  .placeholder-dark::placeholder {
+    color:white; 
+}
+
+.placeholder-light::placeholder {
+    color: black; 
+}
+
+
+
+  

@@ -4,8 +4,9 @@ import { Button, Table } from 'react-bootstrap';
 import AppointmentModal from './AppointmentModal';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-const AppointmentList = () => {
+const AppointmentList = ({darkMode}) => {
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,8 +17,9 @@ const AppointmentList = () => {
     const [cityList, setCityList] = useState([]);
     const [doctorsList, setDoctorsList] = useState([]);
     const [specialtiesList, setSpecialtiesList] = useState([]);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
     const initialData = {
-
         appointmentID: 0,
         appointmentDateTime: "",
         firstName: "",
@@ -33,7 +35,6 @@ const AppointmentList = () => {
         reasonForAppointment: "",
         specialityID: null,
         doctorID: null
-
     }
     const [patientAppointment, setPatientAppointment] = useState(initialData)
     const initialErrors = {
@@ -53,13 +54,14 @@ const AppointmentList = () => {
         doctorID: false
     }
     const [patientAppointmentError, setPatientAppointmentError] = useState(initialErrors)
+    const [mobileValid,setMobileValid] = useState(false)
+    const deleteMessage = "Are you sure you want to delete this Appointment?"
 
     useEffect(()=>{
         if(!token){
             navigate('/')
         }
     },[])
-
 
     const fetchDoctorList = async () => {
         try {
@@ -150,6 +152,7 @@ const AppointmentList = () => {
         setIsModalOpen(false);
         setSelectedAppointment(null);
         setPatientAppointmentError(initialErrors)
+        setMobileValid(false)
     };
 
     const handleAddClick = () => {
@@ -166,38 +169,34 @@ const AppointmentList = () => {
         debugger;
         let hasError = false;
         const newErrors = {};
-    
         for (const key in patientAppointment) {
             if (key !== 'appointmentID' && !patientAppointment[key] && patientAppointment[key] !== 0) {
                 newErrors[key] = true;
+                hasError = true;
+            } else if (key === 'mobileNo' && patientAppointment[key].length < 10) {
+                setMobileValid(true);
                 hasError = true;
             } else {
                 newErrors[key] = false;
             }
         }
-    
         setPatientAppointmentError(newErrors);
-    
         return hasError;
     };
     
-
+    
     const handleSaveAppointment = async () => {
         debugger
         if (validateAppointment()) {
             return;
         }
         debugger
-
         if (selectedAppointment) {
             const selectedDateTime = new Date(patientAppointment.appointmentDateTime);
-
             // Get the timezone offset in minutes
             const timezoneOffset = selectedDateTime.getTimezoneOffset();
-
             // Adjust the date and time by subtracting the timezone offset
             selectedDateTime.setMinutes(selectedDateTime.getMinutes() - timezoneOffset);
-
             // Convert the adjusted date and time to ISO 8601 format
             const isoDateTime = selectedDateTime.toISOString();
             console.log("updateData", patientAppointment)
@@ -233,16 +232,12 @@ const AppointmentList = () => {
                 console.error('Error updating patient:', error.message);
             }
         } else {
-
             console.log("first", patientAppointment)
             const selectedDateTime = new Date(patientAppointment.appointmentDateTime);
-
             // Get the timezone offset in minutes
             const timezoneOffset = selectedDateTime.getTimezoneOffset();
-
             // Adjust the date and time by subtracting the timezone offset
             selectedDateTime.setMinutes(selectedDateTime.getMinutes() - timezoneOffset);
-
             // Convert the adjusted date and time to ISO 8601 format
             const isoDateTime = selectedDateTime.toISOString();
             const patientData = {
@@ -262,7 +257,6 @@ const AppointmentList = () => {
                 "specialityID": parseInt(patientAppointment.specialityID),
                 "doctorID": parseInt(patientAppointment.doctorID)
             }
-
             try {
                 const response = await axios.post('https://localhost:7137/api/Patient/Insert', patientData, {
                     headers: {
@@ -282,19 +276,27 @@ const AppointmentList = () => {
         setIsModalOpen(false);
     };
 
-    const handleDeleteAppointment = async (appointmentId) => {
+    const handleDeleteClick = async (appointmentId) => {
+        setDeleteAppointmentId(appointmentId)
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirmed = async () => {
         try {
-            const response = await axios.delete(`https://localhost:7137/api/Patient/Delete/${appointmentId}`, {
+            const response = await axios.delete(`https://localhost:7137/api/Patient/Delete/${deleteAppointmentId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            const data = response.data;
             fetchPatientList()
-            console.log('Patient deleted successfully:');
+            setIsDeleteModalOpen(false);
         } catch (error) {
-            console.error('Error deleting patient:', error.message);
+            console.error('Error deleting item:', error.message);
         }
+    };
+
+    const handleDeleteModalClose = () => {
+        setIsDeleteModalOpen(false);
     };
 
     const handleChange = (e) => {
@@ -312,6 +314,7 @@ const AppointmentList = () => {
         setPatientAppointment({ ...patientAppointment, dob: value });
         setPatientAppointmentError({...patientAppointmentError,dob:false})
     };
+
     const handleDateTimeChange = (date) => {
         console.log("dateandtime", date._d)
         setPatientAppointment({ ...patientAppointment, appointmentDateTime: date._d });
@@ -322,10 +325,12 @@ const AppointmentList = () => {
         setPatientAppointment({ ...patientAppointment, doctorID: selectedOption.value });
         setPatientAppointmentError({...patientAppointmentError,doctorID:false})
     };
+
     const handleSpecialtyChange = (selectedOption) => {
         setPatientAppointment({ ...patientAppointment, specialityID: selectedOption.value });
         setPatientAppointmentError({...patientAppointmentError,specialityID:false})
     };
+
     const handleStateChange = (selectedOption) => {
         setPatientAppointment({ ...patientAppointment, stateID: selectedOption.value });
         setPatientAppointmentError({...patientAppointmentError,stateID:false})
@@ -338,14 +343,13 @@ const AppointmentList = () => {
         setPatientAppointmentError({...patientAppointmentError,cityID:false})
     };
 
-
     return (
         <div className="container" style={{ height: "100vh" }}>
-            <div className="w-100 d-flex justify-content-between">
+            <div className="w-100 d-flex justify-content-between my-2">
                 <h3>Appointment List</h3>
                 <Button variant="primary" onClick={handleAddClick}>Add</Button>
             </div>
-            <Table striped bordered hover>
+            <Table striped bordered hover variant={darkMode?"dark":"light"}>
                 <thead>
                     <tr>
                         <th>S.No.</th>
@@ -372,7 +376,7 @@ const AppointmentList = () => {
                             {/* <td>{appointment?.education}</td> */}
                             <td>
                                 <Button variant="info" onClick={() => handleEditClick(appointment)}className="mx-2">Edit</Button>
-                                <Button variant="danger" onClick={() => handleDeleteAppointment(appointment.AppointmentID)}>Delete</Button>
+                                <Button variant="danger" onClick={() => handleDeleteClick(appointment.AppointmentID)}>Delete</Button>
                             </td>
                         </tr>
                     ))}
@@ -397,6 +401,15 @@ const AppointmentList = () => {
                 handleCityChange={handleCityChange}
                 setPatientAppointment={setPatientAppointment}
                 patientAppointmentError={patientAppointmentError}
+                darkMode={darkMode}
+                mobileValid={mobileValid}
+            />
+            <DeleteConfirmationModal
+                show={isDeleteModalOpen}
+                handleClose={handleDeleteModalClose}
+                handleDelete={handleDeleteConfirmed}
+                deleteMessage={deleteMessage}
+                darkMode={darkMode}
             />
         </div>
     );
