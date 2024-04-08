@@ -13,7 +13,7 @@ import ReceiptList from './components/ReceiptList';
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
 function App() {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     if (!darkMode) {

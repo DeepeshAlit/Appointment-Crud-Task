@@ -32,11 +32,11 @@ const ReceiptModal = ({
             quantity: item.Quantity,
             rate: item.Rate,
             discount: item.Discount,
+            discountPercent:item.Discount,
             amount: item.Amount,
             itemName: "",
             unit: "",
             grossAmount: 0,
-            discountPercent: 0,
         };
     })
 

@@ -163,7 +163,7 @@ const validateReceipt = () => {
           itemID: detail.itemID,
           quantity: parseInt(detail.quantity),
           rate: parseInt(detail.rate),
-          discount: detail.discount,
+          discount: detail.discountPercent,
           amount: detail.amount,
         }));
 
@@ -208,7 +208,7 @@ const validateReceipt = () => {
           itemID: detail.itemID,
           quantity: parseInt(detail.quantity),
           rate: parseInt(detail.rate),
-          discount: detail.discount,
+          discount: detail.discountPercent,
           amount: detail.amount,
         }));
 
