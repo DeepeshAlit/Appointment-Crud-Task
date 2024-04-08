@@ -186,7 +186,7 @@ const ReceiptModal = ({
                         <Form.Label>Items</Form.Label>
                         {receiptData.receiptDetail.map((item, index) => (
                             <div key={index} className="d-flex gap-1">
-                                <Col>
+                                <Col className="col-2">
                                     <Form.Group controlId="itemName">
                                         <Select
                                             options={formattedItemOptions}

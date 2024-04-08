@@ -53,7 +53,7 @@ const DoctorList = ({darkMode}) => {
 
     const fetchSpecialtyList = async () => {
         try {
-            const response = await axios.get('https://localhost:7137/api/Speciality/GetList', {
+            const response = await axios.get('https://localhost:7137/api/Speciality/GetLookupList', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

@@ -5,8 +5,53 @@ import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import Select from "react-select";
 import moment from 'moment';
+import axios from "axios"
 
-const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, handleChange, patientAppointment, handleDateChange, handleDateTimeChange, doctorsList, handleDoctorChange, specialtiesList, handleSpecialtyChange, stateList, handleStateChange, cityList, handleCityChange, setPatientAppointment, patientAppointmentError, darkMode, mobileValid,handleGenderChange ,handleMaritalStatusChange}) => {
+const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, handleChange, patientAppointment, handleDateChange, handleDateTimeChange, handleDoctorChange, handleSpecialtyChange, stateList, handleStateChange, cityList, handleCityChange, setPatientAppointment, patientAppointmentError, darkMode, mobileValid, handleGenderChange, handleMaritalStatusChange }) => {
+    const token = localStorage.getItem("token");
+    const [specialtiesList, setSpecialtiesList] = useState([]);
+    const [doctorsList, setDoctorsList] = useState([]);
+    const [filterDoctor,setFilterDoctor] = useState([]);
+
+    const fetchSpecialtyList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/Speciality/GetLookupList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const specialities = response.data;
+            setSpecialtiesList(specialities)
+            console.log('Speciality list:', specialities);
+        } catch (error) {
+            console.error('Error fetching speciality list:', error.message);
+        }
+    }
+
+    const fetchDoctorList = async () => {
+        try {
+            const response = await axios.get('https://localhost:7137/api/Doctor/GetLookupList', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const doctorList = response.data;
+            setDoctorsList(doctorList)
+            console.log('Doctor list:', doctorList);
+        } catch (error) {
+            console.error('Error fetching doctor list:', error.message);
+        }
+    }
+
+    useEffect(() => { 
+        fetchSpecialtyList();
+        fetchDoctorList();
+     }, [])
+
+     useEffect(()=>{
+        let filterDoctor = doctorsList.filter(doctor => doctor.SpecialityID === parseInt(patientAppointment.specialityID));
+        setFilterDoctor(filterDoctor)
+    },[patientAppointment.specialityID])
 
     useEffect(() => {
         if (selectedAppointment) {
@@ -34,7 +79,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
     }, [selectedAppointment]);
     console.log("last", patientAppointment)
 
-    const formattedDoctorOptions = doctorsList.map(doctor => ({
+    const formattedDoctorOptions = filterDoctor.map(doctor => ({
         label: doctor.DoctorName,
         value: doctor.DoctorID
     }));
@@ -195,7 +240,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                                     <option value={0}>Married</option>
                                     <option value={1}>UnMarried</option>
                                 </Form.Control> */}
-                                 <Select
+                                <Select
                                     options={maritalStatusOptions}
                                     value={
                                         maritalStatusOptions &&
@@ -271,7 +316,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                         </Form.Group>
                     </div>
                     <div className='d-flex justify-content-between gap-3'>
-                    <Form.Group controlId="specialityID" className='w-50'>
+                        <Form.Group controlId="specialityID" className='w-50'>
                             <Form.Label>Specialty</Form.Label>
                             <Select
                                 options={formattedSpecialtyOptions}
@@ -301,7 +346,7 @@ const AppointmentModal = ({ show, handleClose, handleSave, selectedAppointment, 
                             />
                             <p style={{ fontSize: "x-small", color: "red" }}>{patientAppointmentError.doctorID ? "Please Select Doctor" : ""}</p>
                         </Form.Group>
-                        
+
                     </div>
                 </Form>
             </Modal.Body>

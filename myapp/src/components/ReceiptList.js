@@ -120,7 +120,7 @@ const validateReceipt = () => {
 
   const fetchItemsList=async()=>{
     try {
-      const response = await axios.get('https://localhost:7137/api/Item/GetList', {
+      const response = await axios.get('https://localhost:7137/api/Item/GetLookupList', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -163,7 +163,7 @@ const validateReceipt = () => {
           itemID: detail.itemID,
           quantity: parseInt(detail.quantity),
           rate: parseInt(detail.rate),
-          discount: detail.discountPercent,
+          discount: parseInt(detail.discountPercent),
           amount: detail.amount,
         }));
 
@@ -208,7 +208,7 @@ const validateReceipt = () => {
           itemID: detail.itemID,
           quantity: parseInt(detail.quantity),
           rate: parseInt(detail.rate),
-          discount: detail.discountPercent,
+          discount: parseInt(detail.discountPercent),
           amount: detail.amount,
         }));
 
@@ -295,6 +295,7 @@ const validateReceipt = () => {
 
   const handleDateChange = (value) => {
     setReceiptData({ ...receiptData, receiptDate: value });
+    setReceiptError({...receiptError,receiptDate:false})
   };
 
   const handleChange = (e) => {

@@ -16,8 +16,8 @@ const AppointmentList = ({darkMode}) => {
     const [stateList, setStateList] = useState([]);
     const [filterCity, setFilterCity] = useState([]);
     const [cityList, setCityList] = useState([]);
-    const [doctorsList, setDoctorsList] = useState([]);
-    const [specialtiesList, setSpecialtiesList] = useState([]);
+    // const [doctorsList, setDoctorsList] = useState([]);
+    // const [specialtiesList, setSpecialtiesList] = useState([]);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
     const initialData = {
@@ -57,7 +57,7 @@ const AppointmentList = ({darkMode}) => {
     const [patientAppointmentError, setPatientAppointmentError] = useState(initialErrors)
     const [mobileValid,setMobileValid] = useState(false)
     const deleteMessage = "Are you sure you want to delete this Appointment?"
-    const [filterDoctor,setFilterDoctor] = useState([]);
+    // const [filterDoctor,setFilterDoctor] = useState([]);
 
     useEffect(()=>{
         if(!token){
@@ -69,40 +69,42 @@ const AppointmentList = ({darkMode}) => {
         let filteredCities = cityList.filter(city => city.StateID === parseInt(patientAppointment.stateID));
         setFilterCity(filteredCities)
     },[patientAppointment.stateID])
-    useEffect(()=>{
-        let filterDoctor = doctorsList.filter(doctor => doctor.SpecialityID === parseInt(patientAppointment.specialityID));
-        setFilterDoctor(filterDoctor)
-    },[patientAppointment.specialityID])
 
-    const fetchDoctorList = async () => {
-        try {
-            const response = await axios.get('https://localhost:7137/api/Doctor/GetList', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const doctorList = response.data;
-            setDoctorsList(doctorList)
-            console.log('Doctor list:', doctorList);
-        } catch (error) {
-            console.error('Error fetching doctor list:', error.message);
-        }
-    }
 
-    const fetchSpecialtyList = async () => {
-        try {
-            const response = await axios.get('https://localhost:7137/api/Speciality/GetList', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const specialities = response.data;
-            setSpecialtiesList(specialities)
-            console.log('Speciality list:', specialities);
-        } catch (error) {
-            console.error('Error fetching speciality list:', error.message);
-        }
-    }
+    // useEffect(()=>{
+    //     let filterDoctor = doctorsList.filter(doctor => doctor.SpecialityID === parseInt(patientAppointment.specialityID));
+    //     setFilterDoctor(filterDoctor)
+    // },[patientAppointment.specialityID])
+
+    // const fetchDoctorList = async () => {
+    //     try {
+    //         const response = await axios.get('https://localhost:7137/api/Doctor/GetLookupList', {
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`
+    //             }
+    //         });
+    //         const doctorList = response.data;
+    //         setDoctorsList(doctorList)
+    //         console.log('Doctor list:', doctorList);
+    //     } catch (error) {
+    //         console.error('Error fetching doctor list:', error.message);
+    //     }
+    // }
+
+    // const fetchSpecialtyList = async () => {
+    //     try {
+    //         const response = await axios.get('https://localhost:7137/api/Speciality/GetLookupList', {
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`
+    //             }
+    //         });
+    //         const specialities = response.data;
+    //         setSpecialtiesList(specialities)
+    //         console.log('Speciality list:', specialities);
+    //     } catch (error) {
+    //         console.error('Error fetching speciality list:', error.message);
+    //     }
+    // }
 
     const fetchPatientList = async () => {
         try {
@@ -151,8 +153,8 @@ const AppointmentList = ({darkMode}) => {
 
     useEffect(() => {
         fetchPatientList()
-        fetchDoctorList()
-        fetchSpecialtyList()
+        // fetchDoctorList()
+        // fetchSpecialtyList()
         fetchStateList()
         fetchCityList()
 
@@ -430,9 +432,9 @@ const AppointmentList = ({darkMode}) => {
                 handleDateChange={handleDateChange}
                 handleDateTimeChange={handleDateTimeChange}
                 // doctorsList={doctorsList}
-                doctorsList={filterDoctor}
+                // doctorsList={filterDoctor}
                 handleDoctorChange={handleDoctorChange}
-                specialtiesList={specialtiesList}
+                // specialtiesList={specialtiesList}
                 handleSpecialtyChange={handleSpecialtyChange}
                 stateList={stateList}
                 handleStateChange={handleStateChange}
