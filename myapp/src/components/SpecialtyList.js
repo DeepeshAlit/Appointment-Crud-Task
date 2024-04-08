@@ -29,6 +29,7 @@ const SpecialtyList = ({darkMode}) => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); 
     const [inUseError,setInUseError] = useState(false)
     const deleteMessage = "Are you sure you want to delete this Specialty?"
+    const [duplicateError,setDuplicateError] = useState(false)
 
 
     useEffect(() => {
@@ -61,6 +62,7 @@ const SpecialtyList = ({darkMode}) => {
         setSelectedSpecialty(null);
         setSpecialtyError(initialErrors)
         setSpeciality(initialData)
+        setDuplicateError(false)
     };
 
     const handleAddClick = () => {
@@ -109,8 +111,12 @@ const SpecialtyList = ({darkMode}) => {
                 });
                 getSpecialityList();
                 console.log('Speciality updated successfully:');
+                handleCloseModal();
             } catch (error) {
                 console.error('Error updating speciality:', error.message);
+                if (error.response.data.includes("Cannot accept duplicate speciality name.") ){
+                    setDuplicateError(true);
+                }
             }
         } else {
             try {
@@ -128,11 +134,15 @@ const SpecialtyList = ({darkMode}) => {
                 const resData = response.data;
                 getSpecialityList();
                 console.log('Speciality inserted successfully:', resData);
+                handleCloseModal();
             } catch (error) {
                 console.error('Error inserting speciality:', error.message);
+                if (error.response.data.includes("Cannot accept duplicate speciality name.") ){
+                    setDuplicateError(true);
+                }
             }
         }
-        handleCloseModal();
+        
     };
 
     const handleEditClick = (specialt) => {
@@ -164,6 +174,7 @@ const SpecialtyList = ({darkMode}) => {
       };
 
     const handleChange = (e) => {
+        setDuplicateError(false)
         const { name, value } = e.target;
         setSpeciality(prevState => ({
             ...prevState,
@@ -225,7 +236,7 @@ const SpecialtyList = ({darkMode}) => {
                 setErrors={setErrors}
                 setSpeciality={setSpeciality}
                 specialtyError={specialtyError}
-                
+                duplicateError={duplicateError}
                 darkMode={darkMode}
             />
             <DeleteConfirmationModal

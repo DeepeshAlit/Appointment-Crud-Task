@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handleChange,speciality,setSpeciality,specialtyError,darkMode }) => {
+const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handleChange,speciality,setSpeciality,specialtyError,darkMode,duplicateError }) => {
    useEffect(() => {
     if (selectedSpecialty) {
         setSpeciality({
@@ -29,6 +29,7 @@ const SpecialtyModal = ({ show, handleClose, handleSave,selectedSpecialty, handl
                             className={darkMode ? 'bg-dark text-light ' : 'bg-light  text-dark'}
                         />
                           <p style={{ fontSize: "x-small", color: "red" }}>{specialtyError.SpecialityName ? "Please Enter Name" : ""}</p>
+                          <p style={{ fontSize: "x-small", color: "red" }}>{duplicateError ? "This Item Already Exist" : ""}</p>
                     </Form.Group>
                     <Form.Group controlId="Description">
                         <Form.Label>Description</Form.Label>

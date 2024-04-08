@@ -125,6 +125,9 @@ const DoctorList = ({darkMode}) => {
                 setIsModalOpen(false);
             } catch (error) {
                 console.error('Error updating doctor:', error.message);
+                if (error.response.data.includes("Cannot accept duplicate doctor name") ){
+                    setDuplicateError(true);
+                }
             }
 
         } else {
@@ -205,6 +208,7 @@ const DoctorList = ({darkMode}) => {
 
     const handleDeleteModalClose = () => {
         setIsDeleteModalOpen(false);
+        setInUseError(false)
     };
 
     return (

@@ -23,6 +23,7 @@ const ItemList = ({darkMode}) => {
     const [deleteItemId, setDeleteItemId] = useState(null);
     const deleteMessage = "Are you sure you want to delete this item?"
     const [duplicateError,setDuplicateError] = useState(false)
+    const [inUseError,setInUseError] = useState(false)
 
     useEffect(() => {
         if (!token) {
@@ -102,7 +103,9 @@ const ItemList = ({darkMode}) => {
                 getItemsList();
             } catch (error) {
                 console.error('Error updating item:', error.message);
-                throw error;
+                if (error.response.data.includes("Cannot accept duplicate item name") ){
+                    setDuplicateError(true);
+                }
             }
         } else {
             // Add new item
@@ -151,11 +154,14 @@ const ItemList = ({darkMode}) => {
                 }
             });
             getItemsList();
+        setIsDeleteModalOpen(false);
             
         } catch (error) {
             console.error('Error deleting item:', error.message);
+            if (error.response.data.includes("The statement has been terminated") ){
+                setInUseError(true);
+            }
         }
-        setIsDeleteModalOpen(false);
 
     };
 
@@ -173,6 +179,7 @@ const ItemList = ({darkMode}) => {
 
     const handleDeleteModalClose = () => {
         setIsDeleteModalOpen(false);
+        setInUseError(false)
     };
 
     return (
@@ -221,6 +228,7 @@ const ItemList = ({darkMode}) => {
                 handleDelete={handleDeleteConfirmed}
                 deleteMessage={deleteMessage}
                 darkMode = {darkMode}
+                inUseError={inUseError}
             />
         </div>
     );
