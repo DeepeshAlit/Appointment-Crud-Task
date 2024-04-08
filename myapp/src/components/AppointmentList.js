@@ -5,6 +5,7 @@ import AppointmentModal from './AppointmentModal';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import moment from 'moment';
 
 const AppointmentList = ({darkMode}) => {
     const token = localStorage.getItem("token");
@@ -21,7 +22,7 @@ const AppointmentList = ({darkMode}) => {
     const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
     const initialData = {
         appointmentID: 0,
-        appointmentDateTime: "",
+        appointmentDateTime: moment().toDate(),
         firstName: "",
         lastName: "",
         fullName: "",
@@ -56,12 +57,22 @@ const AppointmentList = ({darkMode}) => {
     const [patientAppointmentError, setPatientAppointmentError] = useState(initialErrors)
     const [mobileValid,setMobileValid] = useState(false)
     const deleteMessage = "Are you sure you want to delete this Appointment?"
+    const [filterDoctor,setFilterDoctor] = useState([]);
 
     useEffect(()=>{
         if(!token){
             navigate('/')
         }
     },[])
+
+    useEffect(()=>{
+        let filteredCities = cityList.filter(city => city.StateID === parseInt(patientAppointment.stateID));
+        setFilterCity(filteredCities)
+    },[patientAppointment.stateID])
+    useEffect(()=>{
+        let filterDoctor = doctorsList.filter(doctor => doctor.SpecialityID === parseInt(patientAppointment.specialityID));
+        setFilterDoctor(filterDoctor)
+    },[patientAppointment.specialityID])
 
     const fetchDoctorList = async () => {
         try {
@@ -299,16 +310,32 @@ const AppointmentList = ({darkMode}) => {
         setIsDeleteModalOpen(false);
     };
 
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setPatientAppointment(prevState => ({
+    //         ...prevState,
+    //         [name]: value
+    //     }));
+    //     setPatientAppointmentError({
+    //         ...patientAppointmentError, [name]: false
+    //     })
+    // };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setPatientAppointment(prevState => ({
             ...prevState,
             [name]: value
         }));
+        if (name === 'mobileNo') {
+            setMobileValid(false);
+        }
         setPatientAppointmentError({
-            ...patientAppointmentError, [name]: false
-        })
+            ...patientAppointmentError,
+            [name]: false
+        });
     };
+    
 
     const handleDateChange = (value) => {
         setPatientAppointment({ ...patientAppointment, dob: value });
@@ -329,13 +356,24 @@ const AppointmentList = ({darkMode}) => {
     const handleSpecialtyChange = (selectedOption) => {
         setPatientAppointment({ ...patientAppointment, specialityID: selectedOption.value });
         setPatientAppointmentError({...patientAppointmentError,specialityID:false})
+        //  let filterDoctor = doctorsList.filter(doctor => doctor.SpecialityID === parseInt(selectedOption.value));
+        // setFilterDoctor(filterDoctor)
     };
 
     const handleStateChange = (selectedOption) => {
         setPatientAppointment({ ...patientAppointment, stateID: selectedOption.value });
         setPatientAppointmentError({...patientAppointmentError,stateID:false})
-        let filteredCities = cityList.filter(city => city.StateID === parseInt(selectedOption.value));
-        setFilterCity(filteredCities)
+        // let filteredCities = cityList.filter(city => city.StateID === parseInt(selectedOption.value));
+        // setFilterCity(filteredCities)
+    };
+
+    const handleGenderChange = (selectedOption) => {
+        setPatientAppointment({ ...patientAppointment, gender: selectedOption.value });
+        setPatientAppointmentError({...patientAppointmentError,gender:false})
+    };
+    const handleMaritalStatusChange = (selectedOption) => {
+        setPatientAppointment({ ...patientAppointment, maritalStatus: selectedOption.value });
+        setPatientAppointmentError({...patientAppointmentError,maritalStatus:false})
     };
 
     const handleCityChange = (selectedOption) => {
@@ -391,18 +429,22 @@ const AppointmentList = ({darkMode}) => {
                 handleChange={handleChange}
                 handleDateChange={handleDateChange}
                 handleDateTimeChange={handleDateTimeChange}
-                doctorsList={doctorsList}
+                // doctorsList={doctorsList}
+                doctorsList={filterDoctor}
                 handleDoctorChange={handleDoctorChange}
                 specialtiesList={specialtiesList}
                 handleSpecialtyChange={handleSpecialtyChange}
                 stateList={stateList}
                 handleStateChange={handleStateChange}
-                cityList={selectedAppointment ? cityList : filterCity}
+                // cityList={selectedAppointment ? cityList : filterCity}
+                cityList={filterCity}
                 handleCityChange={handleCityChange}
                 setPatientAppointment={setPatientAppointment}
                 patientAppointmentError={patientAppointmentError}
                 darkMode={darkMode}
                 mobileValid={mobileValid}
+                handleGenderChange={handleGenderChange}
+                handleMaritalStatusChange={handleMaritalStatusChange}
             />
             <DeleteConfirmationModal
                 show={isDeleteModalOpen}
